@@ -20,7 +20,7 @@
 
 **Professora:** Sheila Maria Mendes Paiva
 
-**Competência:** Integrar Interfaces e Serviços WEB — CESED/UNIFACISA — 2026-03
+**Competência:** Integrar Interfaces e Serviços WEB - CESED/UNIFACISA - 2026-03
 
 ---
 
