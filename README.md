@@ -265,7 +265,7 @@ Projeto-1-FinTrack-REACT/
 - [Node.js](https://nodejs.org/) instalado
 - [VS Code](https://code.visualstudio.com/) instalado
 - Conta no [MongoDB Atlas](https://www.mongodb.com/atlas)
-- [Postman](https://www.postman.com/downloads/) ou Insomnia (para testar as rotas REST)
+- [Postman](https://www.postman.com/downloads/) ou ThunderClient (para testar as rotas REST)
 
 ### 📥 Passo 1 — Baixar o código pelo GitHub
 - Acesse o repositório no GitHub
