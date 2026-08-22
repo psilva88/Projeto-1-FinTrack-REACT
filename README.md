@@ -32,8 +32,6 @@ Esta é a **Fase 1** do projeto, na qual foi desenvolvido o **backend completo**
 
 Cada usuário cadastra suas próprias contas (carteira, banco, cartão) e categorias (alimentação, transporte, lazer), e a partir delas lança suas transações. Cada pessoa enxerga apenas os próprios dados, enquanto o administrador tem acesso à gestão de usuários.
 
-> A **Fase 2** acrescentará o frontend em React consumindo esta API.
-
 ---
 
 ## 🛠️ Tecnologias Utilizadas
