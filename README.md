@@ -1,6 +1,7 @@
 <p align="center">
-  <img src="COLE_AQUI_O_LINK_DA_LOGO" alt="FinTrack Logo" width="400"/>
+  <img src="https://github.com/user-attachments/assets/be46d166-7fb3-48b9-a552-276973205862" alt="FinTrack Logo" width="600"/>
 </p>
+
 <p align="center">
   Seu controle de gastos pessoais. Registre receitas e despesas, organize por conta e categoria e saiba para onde vai o seu dinheiro.
 </p>
