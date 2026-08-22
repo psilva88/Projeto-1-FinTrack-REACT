@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/18770a10-ca78-4628-a203-70790f7d3354" alt="AniTrack Logo" width="400"/>
+  <img src="COLE_AQUI_O_LINK_DA_LOGO" alt="FinTrack Logo" width="400"/>
 </p>
 <p align="center">
-  Seu catálogo pessoal de animes. Acompanhe episódios, marque favoritos e organize sua jornada.
+  Seu controle de gastos pessoais. Registre receitas e despesas, organize por conta e categoria e saiba para onde vai o seu dinheiro.
 </p>
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat-square&logo=react" />
   <img src="https://img.shields.io/badge/Node.js-Express-339933?style=flat-square&logo=node.js" />
   <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb" />
+  <img src="https://img.shields.io/badge/GraphQL-Apollo_Server-E10098?style=flat-square&logo=graphql" />
   <img src="https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens" />
 </p>
 
@@ -18,207 +18,255 @@
 - Rodrigo Lira Rodrigues
 - Luiz Gustavo Barbosa Machado
 
+**Professora:** Sheila Maria Mendes Paiva
+**Competência:** Integrar Interfaces e Serviços WEB — CESED/UNIFACISA — 2026-03
+
 ---
 
 ## 💡 Descrição da Aplicação
 
-O AniTrack resolve a dificuldade que os fãs de cultura pop têm em organizar seu progresso em obras longas. O sistema evita que o usuário se perca em quais episódios já foram assistidos, centralizando tudo em um único lugar.
+O **FinTrack** resolve a dificuldade que as pessoas têm de acompanhar para onde vai o dinheiro ao longo do mês. O sistema evita que o usuário dependa de anotações soltas, planilhas manuais ou da própria memória, centralizando todas as receitas e despesas em um único lugar, organizadas por conta e por categoria.
 
-Nesta **Fase 2**, a aplicação evoluiu para um sistema **full stack** completo: o frontend React agora se conecta a uma **API REST própria** em Node.js, com autenticação real via **JWT**, senhas criptografadas e dados persistidos em um banco **MongoDB**. Cada usuário possui sua própria lista pessoal de animes, salva de verdade no banco de dados.
+Esta é a **Fase 1** do projeto, na qual foi desenvolvido o **backend completo** da aplicação: banco de dados, validação de dados, relacionamento entre entidades, segurança com JWT e as duas interfaces de serviços WEB exigidas — **RESTful** e **GraphQL**.
 
-O usuário pode criar uma conta, fazer login ou entrar como visitante. Dentro do sistema, ele gerencia sua lista: adiciona títulos (manualmente ou buscando direto no **MyAnimeList**), atualiza episódios com botões `+` e `−`, edita, favorita, ordena, busca e alterna entre visualização em lista e grade.
+Cada usuário cadastra suas próprias contas (carteira, banco, cartão) e categorias (alimentação, transporte, lazer), e a partir delas lança suas transações. Cada pessoa enxerga apenas os próprios dados, enquanto o administrador tem acesso à gestão de usuários.
+
+> A **Fase 2** acrescentará o frontend em React consumindo esta API.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-### Frontend
-| Tecnologia | Uso |
-|---|---|
-| **React** | Biblioteca principal — componentes funcionais |
-| **React Router DOM** | Navegação SPA com rotas básicas, dinâmicas e aninhadas |
-| **Context API** | Gerenciamento de estado global (tema, animes, autenticação) |
-| **React Hooks** | `useState`, `useEffect`, `useContext`, `useRef` |
-| **Fetch API** | Comunicação com o backend e APIs externas |
-| **API do MyAnimeList (Jikan)** | Busca de animes e destaques populares (extra) |
-
-### Backend
 | Tecnologia | Uso |
 |---|---|
 | **Node.js + Express** | Servidor e API REST |
-| **MongoDB + Mongoose** | Banco de dados NoSQL e modelagem |
-| **JWT (jsonwebtoken)** | Autenticação por token |
-| **bcryptjs** | Criptografia de senhas |
-| **express-validator** | Validação de dados |
-| **helmet, cors, morgan** | Segurança e logs |
+| **MongoDB Atlas + Mongoose** | Banco de dados NoSQL e modelagem (ODM) |
+| **Apollo Server** | Servidor GraphQL para as consultas compostas |
+| **GraphQL** | Linguagem de consulta dos relatórios |
+| **JWT (jsonwebtoken)** | Autenticação e autorização por token |
+| **bcryptjs** | Criptografia das senhas |
 | **dotenv** | Variáveis de ambiente |
+| **nodemon** | Reinício automático em desenvolvimento |
 
 ---
 
 ## 🗄️ Modelagem do Banco de Dados
 
-O sistema possui **duas entidades relacionadas**: `Usuário` e `Anime`.
+O sistema possui **quatro entidades relacionadas**: `Usuário`, `Conta`, `Categoria` e `Transação`.
 
 ### Entidade: Usuário
 | Campo | Tipo | Detalhe |
 |---|---|---|
 | nome | String | Obrigatório |
-| email | String | Obrigatório, único |
-| senha | String | Obrigatório (armazenada com hash bcrypt) |
-| role | String | `user` ou `admin` (padrão: user) |
-| idade | Number | Opcional |
+| email | String | Obrigatório, único, com validação de formato |
+| senha | String | Obrigatória, mínimo 6 caracteres (hash bcrypt, nunca retornada nas consultas) |
+| papel | String | `usuario` ou `admin` (padrão: usuario) |
 
-### Entidade: Anime
+### Entidade: Conta
 | Campo | Tipo | Detalhe |
 |---|---|---|
 | nome | String | Obrigatório |
-| totalEps | Number | Obrigatório |
-| assistidos | Number | Padrão: 0 |
-| status | String | Planejando / Assistindo / Pausado / Finalizado |
-| favorito | Boolean | Padrão: false |
-| capa | String | URL da imagem |
+| tipo | String | `carteira`, `banco` ou `cartao` |
+| saldoInicial | Number | Padrão: 0 |
 | **usuario** | ObjectId | **Referência ao Usuário dono** |
 
-### Relacionamento
-**Um Usuário → Vários Animes** (um para muitos). Cada documento de anime guarda o `ObjectId` do usuário dono, garantindo que cada pessoa veja apenas a sua própria lista.
+### Entidade: Categoria
+| Campo | Tipo | Detalhe |
+|---|---|---|
+| nome | String | Obrigatório |
+| tipo | String | `receita` ou `despesa` |
+| **usuario** | ObjectId | **Referência ao Usuário dono** |
+
+### Entidade: Transação
+| Campo | Tipo | Detalhe |
+|---|---|---|
+| descricao | String | Obrigatória |
+| valor | Number | Obrigatório, maior que zero |
+| tipo | String | `receita` ou `despesa` |
+| data | Date | Obrigatória (padrão: data atual) |
+| **conta** | ObjectId | **Referência à Conta** |
+| **categoria** | ObjectId | **Referência à Categoria** |
+| **usuario** | ObjectId | **Referência ao Usuário dono** |
+
+### Relacionamentos
+
+Todos os relacionamentos do sistema são do tipo **muitos para um**:
+
+| Relacionamento | Descrição |
+|---|---|
+| Usuário 1:N Conta | Um usuário possui várias contas |
+| Usuário 1:N Categoria | Um usuário possui várias categorias |
+| Usuário 1:N Transação | Um usuário possui várias transações |
+| Conta 1:N Transação | Uma conta recebe várias transações |
+| Categoria 1:N Transação | Uma categoria classifica várias transações |
+
+Cada documento guarda o `ObjectId` do usuário dono, garantindo que cada pessoa acesse apenas os próprios dados. Contas e categorias com transações vinculadas **não podem ser excluídas**, preservando a integridade dos relacionamentos.
 
 ---
 
-## 🔌 Endpoints da API
+## 🔌 Endpoints da API REST
 
-### 🔑 Autenticação — `/api/auth`
+### 🔑 Autenticação — `/auth`
 | Método | Rota | Descrição | Protegida |
 |---|---|---|---|
-| POST | `/api/auth/register` | Cria um usuário e retorna o token | ❌ |
-| POST | `/api/auth/login` | Faz login e retorna o token | ❌ |
+| POST | `/auth/register` | Cria um usuário e retorna o token | ❌ |
+| POST | `/auth/login` | Faz login e retorna o token | ❌ |
+| GET | `/auth/perfil` | Retorna os dados do usuário logado | ✅ |
 
-### 👤 Usuários — `/api/usuarios`
+### 👤 Usuários — `/usuarios`
 | Método | Rota | Descrição | Protegida |
 |---|---|---|---|
-| GET | `/api/usuarios` | Lista usuários (com paginação e busca) | ✅ |
-| GET | `/api/usuarios/:id` | Busca um usuário por ID | ✅ |
-| PUT | `/api/usuarios/:id` | Atualiza um usuário | ✅ |
-| DELETE | `/api/usuarios/:id` | Remove um usuário | ✅ (apenas admin) |
+| GET | `/usuarios` | Lista todos os usuários | ✅ (apenas admin) |
+| GET | `/usuarios/:id` | Busca um usuário por ID | ✅ (o próprio ou admin) |
+| PUT | `/usuarios/:id` | Atualiza um usuário | ✅ (o próprio ou admin) |
+| DELETE | `/usuarios/:id` | Remove um usuário | ✅ (apenas admin) |
 
-### 🎌 Animes — `/api/animes`
+### 🏦 Contas — `/contas`
 | Método | Rota | Descrição | Protegida |
 |---|---|---|---|
-| GET | `/api/animes` | Lista os animes do usuário logado | ✅ |
-| GET | `/api/animes/stats` | Retorna estatísticas do usuário | ✅ |
-| GET | `/api/animes/:id` | Busca um anime por ID | ✅ |
-| POST | `/api/animes` | Cria um anime | ✅ |
-| PUT | `/api/animes/:id` | Atualiza um anime | ✅ |
-| DELETE | `/api/animes/:id` | Remove um anime | ✅ |
+| POST | `/contas` | Cria uma conta | ✅ |
+| GET | `/contas` | Lista as contas do usuário logado | ✅ |
+| GET | `/contas/:id` | Busca uma conta por ID | ✅ |
+| PUT | `/contas/:id` | Atualiza uma conta | ✅ |
+| DELETE | `/contas/:id` | Remove uma conta (bloqueia se houver transações) | ✅ |
+
+### 🏷️ Categorias — `/categorias`
+| Método | Rota | Descrição | Protegida |
+|---|---|---|---|
+| POST | `/categorias` | Cria uma categoria | ✅ |
+| GET | `/categorias` | Lista as categorias (filtro opcional `?tipo=`) | ✅ |
+| GET | `/categorias/:id` | Busca uma categoria por ID | ✅ |
+| PUT | `/categorias/:id` | Atualiza uma categoria | ✅ |
+| DELETE | `/categorias/:id` | Remove uma categoria (bloqueia se houver transações) | ✅ |
+
+### 💸 Transações — `/transacoes`
+| Método | Rota | Descrição | Protegida |
+|---|---|---|---|
+| POST | `/transacoes` | Cria uma transação | ✅ |
+| GET | `/transacoes` | Lista com paginação e filtros | ✅ |
+| GET | `/transacoes/:id` | Busca uma transação por ID | ✅ |
+| PUT | `/transacoes/:id` | Atualiza uma transação | ✅ |
+| DELETE | `/transacoes/:id` | Remove uma transação | ✅ |
 
 > As rotas protegidas exigem o header: `Authorization: Bearer {token}`
+
+### Filtros da listagem de transações
+
+```
+GET /transacoes?pagina=1&limite=10&tipo=despesa&categoria={id}&conta={id}&inicio=2026-08-01&fim=2026-08-31
+```
+
+| Parâmetro | Descrição |
+|---|---|
+| `pagina` | Página desejada (padrão: 1) |
+| `limite` | Itens por página (padrão: 10, máximo: 100) |
+| `tipo` | `receita` ou `despesa` |
+| `categoria` | ID da categoria |
+| `conta` | ID da conta |
+| `inicio` / `fim` | Período no formato `AAAA-MM-DD` |
+
+---
+
+## 🔮 API GraphQL
+
+Disponível em `http://localhost:3000/graphql` com a interface do **Apollo Sandbox**.
+
+Enquanto o REST cuida do CRUD e da autenticação, o **GraphQL é responsável pelas consultas compostas e pelos relatórios**, evitando várias requisições para montar uma única tela.
+
+| Query | Descrição |
+|---|---|
+| `eu` | Dados do usuário autenticado |
+| `saldoPorConta` | Saldo consolidado de cada conta (saldo inicial + receitas − despesas) |
+| `gastosPorCategoria(inicio, fim)` | Total gasto agrupado por categoria, com percentual |
+| `resumoMensal(mes, ano)` | Resumo fechado de um mês específico |
+| `transacoesComRelacoes(...)` | Transações com conta e categoria já carregadas |
+| `dashboard(inicio, fim)` | Tudo que a tela inicial precisa em uma única requisição |
+
+### Exemplo — Dashboard
+
+```graphql
+query {
+  dashboard {
+    saldoGeral
+    saldoPorConta { conta { nome } saldo }
+    gastosPorCategoria { categoria { nome } total percentual }
+    ultimasTransacoes { descricao valor data categoria { nome } }
+  }
+}
+```
+
+### Exemplo — Resumo mensal
+
+```graphql
+query {
+  resumoMensal(mes: 8, ano: 2026) {
+    totalReceitas
+    totalDespesas
+    saldo
+    quantidadeTransacoes
+    gastosPorCategoria { categoria { nome } total percentual }
+  }
+}
+```
+
+> No Apollo Sandbox, o token vai na aba **Headers**: chave `Authorization`, valor `Bearer {token}`.
 
 ---
 
 ## 📁 Estrutura do Projeto
 
-O projeto está organizado em duas pastas: `anitrack_backend` (API) e `anitrack_frontend` (interface).
-
 ```
-AniTrack/
+Projeto-1-FinTrack-REACT/
 │
-├── anitrack_backend/              ← API REST (Node.js + Express + MongoDB)
-│   ├── src/
-│   │   ├── index.js               ← Ponto de entrada (servidor + middlewares)
-│   │   ├── config/
-│   │   │   └── db.js              ← Conexão com o MongoDB Atlas
-│   │   ├── models/
-│   │   │   ├── Usuario.js         ← Entidade Usuário (role + senha hash)
-│   │   │   └── Anime.js           ← Entidade Anime (relacionada ao Usuário)
-│   │   ├── controllers/
-│   │   │   ├── authController.js     ← Register + Login (JWT)
-│   │   │   ├── usuarioController.js  ← CRUD de usuários
-│   │   │   └── animeController.js    ← CRUD da lista de animes
-│   │   ├── routes/
-│   │   │   ├── authRoutes.js
-│   │   │   ├── usuarioRoutes.js
-│   │   │   └── animeRoutes.js
-│   │   ├── middlewares/
-│   │   │   ├── authMiddleware.js     ← Valida o token JWT
-│   │   │   ├── roleMiddleware.js     ← Autorização por perfil
-│   │   │   ├── errorHandler.js       ← Tratamento central de erros
-│   │   │   └── validate.js           ← Verifica as validações
-│   │   ├── validators/
-│   │   │   └── usuarioValidator.js   ← Regras de validação
-│   │   └── seeds/
-│   │       └── seedUsers.js          ← Popular o banco com dados iniciais
-│   ├── .env                          ← Variáveis (MONGO_URI + JWT_SECRET)
-│   └── package.json
-│
-└── anitrack_frontend/             ← Interface (React)
-    ├── public/
-    │   └── images/                ← Logo e imagens dos animes
+└── fintrack-backend/                  ← API (Node.js + Express + MongoDB)
     ├── src/
-    │   ├── context/
-    │   │   ├── ThemeContext.js    ← Dark / Light Mode global
-    │   │   ├── AnimeContext.js    ← Lista de animes (consome a API)
-    │   │   └── AuthContext.js     ← Autenticação (login real + token)
-    │   ├── services/
-    │   │   └── api.js             ← Camada de comunicação com o backend
-    │   ├── components/
-    │   │   ├── Navbar.js
-    │   │   ├── Sidebar.js
-    │   │   ├── BottomNav.js
-    │   │   └── Footer.js
-    │   ├── hooks/
-    │   │   └── useResponsive.js   ← Hook customizado para responsividade
-    │   ├── pages/
-    │   │   ├── Login.js
-    │   │   ├── Cadastro.js
-    │   │   ├── Home.js
-    │   │   ├── Dashboard.js       ← Layout com <Outlet />
-    │   │   ├── MinhaLista.js
-    │   │   ├── Perfil.js
-    │   │   └── NotFound.js
-    │   ├── App.js                 ← Rotas e Providers
-    │   └── index.js
+    │   ├── server.js                  ← Ponto de entrada (rotas + middlewares)
+    │   ├── database.js                ← Conexão com o MongoDB Atlas
+    │   │
+    │   ├── models/
+    │   │   ├── Usuario.js             ← Entidade Usuário (papel + senha hash)
+    │   │   ├── Conta.js               ← Entidade Conta
+    │   │   ├── Categoria.js           ← Entidade Categoria
+    │   │   └── Transacao.js           ← Entidade Transação (3 relacionamentos)
+    │   │
+    │   ├── controllers/
+    │   │   ├── authController.js      ← Register + Login (JWT)
+    │   │   ├── usuarioController.js   ← CRUD de usuários
+    │   │   ├── contaController.js     ← CRUD de contas
+    │   │   ├── categoriaController.js ← CRUD de categorias
+    │   │   └── transacaoController.js ← CRUD + paginação e filtros
+    │   │
+    │   ├── routes/
+    │   │   ├── authRoutes.js
+    │   │   ├── usuarioRoutes.js
+    │   │   ├── contaRoutes.js
+    │   │   ├── categoriaRoutes.js
+    │   │   └── transacaoRoutes.js
+    │   │
+    │   ├── middlewares/
+    │   │   ├── auth.js                ← Valida o token JWT
+    │   │   └── admin.js               ← Autorização por perfil
+    │   │
+    │   └── graphql/
+    │       ├── typeDefs.js            ← Schema (tipos e queries)
+    │       ├── resolvers.js           ← Agregações e relatórios
+    │       └── index.js               ← Configuração do Apollo Server
+    │
+    ├── .env                           ← Variáveis (não versionado)
+    ├── .env.example                   ← Modelo do .env
+    ├── .gitignore
     └── package.json
 ```
 
 ---
 
-## 🖥️ Explicação das Telas
-
-### 🔐 Login (`/`)
-Tela inicial. O usuário entra com e-mail e senha (autenticação real via API), cria uma conta nova ou continua como visitante. Mostra mensagens de erro vindas do backend (ex: "Credenciais inválidas").
-
-### 📝 Cadastro (`/cadastro`)
-Cria uma conta de verdade no banco de dados, com a senha criptografada. Após o cadastro, o usuário já entra logado.
-
-### 🏠 Home (`/home`)
-Página de boas-vindas com um hero e a seção **Destaques do Catálogo** — os animes mais populares puxados em tempo real do MyAnimeList. Ao passar o mouse num card, é possível adicionar o anime direto à sua lista.
-
-### 📺 Minha Lista (`/dashboard/minha-lista`)
-Núcleo do sistema. Permite:
-- **Buscar animes no MyAnimeList** e preencher os dados automaticamente
-- **Adicionar** animes manualmente (formulário controlado)
-- **Atualizar episódios** com botões `+` e `−`
-- **Editar** qualquer anime por um modal
-- **Remover** com confirmação de segurança
-- **Filtrar** por status e favoritos
-- **Buscar e ordenar** a própria lista
-- Alternar entre visualização em **Lista** ou **Grade**
-
-### 👤 Perfil (`/dashboard/perfil`)
-Estatísticas em tempo real (total de animes, episódios, finalizados, favoritos) e os dados do usuário logado.
-
-### ❌ Página 404 (`*`)
-Exibida para qualquer rota inexistente.
-
----
-
 ## 🚀 Como Rodar o Projeto
-
-O projeto tem duas partes que rodam ao mesmo tempo: o **backend** (API) e o **frontend** (interface). Você vai precisar de **dois terminais abertos**.
 
 ### Pré-requisitos
 - [Node.js](https://nodejs.org/) instalado
 - [VS Code](https://code.visualstudio.com/) instalado
 - Conta no [MongoDB Atlas](https://www.mongodb.com/atlas)
+- [Postman](https://www.postman.com/downloads/) ou Insomnia (para testar as rotas REST)
 
 ### 📥 Passo 1 — Baixar o código pelo GitHub
 - Acesse o repositório no GitHub
@@ -228,57 +276,69 @@ O projeto tem duas partes que rodam ao mesmo tempo: o **backend** (API) e o **fr
 
 > Ou, se preferir usar o **Git** pelo terminal:
 > ```bash
-> git clone https://github.com/psilva88/Projeto-2-AniTrack-REACT-FULLSTACK.git
+> git clone https://github.com/psilva88/Projeto-1-FinTrack-REACT.git
 > ```
 
 ### 💻 Passo 2 — Abrir no VS Code
 - Abra o VS Code
 - Vá em **File → Open Folder**
-- Selecione a pasta `AniTrack` que foi extraída (a que contém as pastas `anitrack_backend` e `anitrack_frontend`)
+- Selecione a pasta `fintrack-backend`
 
 ### 🗄️ Passo 3 — Configurar o Banco (MongoDB Atlas)
 1. Crie uma conta no MongoDB Atlas e um cluster gratuito (M0)
-2. Crie um usuário do banco e libere o acesso de rede (`0.0.0.0/0`)
-3. Copie a connection string e cole no arquivo `.env` do backend, no campo `MONGO_URI`
+2. Em **Database Access**, crie um usuário do banco e guarde a senha
+3. Em **Network Access**, libere o acesso de rede (`0.0.0.0/0`)
+4. Em **Connect → Drivers → Node.js**, copie a connection string
 
-### 🖥️ Passo 4 — Rodar o Backend (Terminal 1)
-No VS Code, abra o terminal (`Ctrl + '`) e digite, **substituindo `SeuUsuario` pelo seu nome de usuário**:
+### ⚙️ Passo 4 — Criar o arquivo .env
+Copie o arquivo `.env.example` para `.env` e preencha:
+
+```
+MONGODB_URI=mongodb+srv://usuario:senha@cluster.mongodb.net/fintrack?retryWrites=true&w=majority
+PORT=3000
+JWT_SECRET=coloque_um_segredo_aqui
+JWT_EXPIRES=7d
+```
+
+> ⚠️ Troque `<password>` pela senha real e acrescente `/fintrack` antes do `?` para nomear o banco.
+> O `.env` **não** vai para o GitHub — ele contém a senha do banco.
+
+### 🖥️ Passo 5 — Instalar e rodar
+No VS Code, abra o terminal (`Ctrl + '`) e digite:
 
 ```bash
-cd C:\Users\SeuUsuario\Downloads\anitrack_backend
 npm install          # apenas na primeira vez
-npm run seed         # (opcional) cria usuários e dados de exemplo
 npm run dev
 ```
 
-> 💡 Exemplo: `cd C:\Users\Arthur\Downloads\anitrack_backend`
+Deve aparecer:
 
-Deve aparecer: `✅ MongoDB Atlas conectado!` e `🚀 Servidor rodando na porta 3000`
-
-### 🖥️ Passo 5 — Rodar o Frontend (Terminal 2)
-Abra um **segundo terminal** (deixe o backend rodando) e digite:
-
-```bash
-cd C:\Users\SeuUsuario\Downloads\anitrack_frontend
-npm install          # apenas na primeira vez
-npm start
+```
+MongoDB conectado com sucesso!
+Servidor rodando na porta 3000
+REST:    http://localhost:3000
+GraphQL: http://localhost:3000/graphql
 ```
 
-> Quando perguntar sobre rodar em outra porta, responda **`Y`** (o backend já usa a 3000).
+### 🧪 Passo 6 — Testar
+1. **Cadastre um usuário** — `POST http://localhost:3000/auth/register`
+   ```json
+   {
+     "nome": "Arthur",
+     "email": "arthur@email.com",
+     "senha": "123456"
+   }
+   ```
+2. **Copie o token** retornado na resposta
+3. **Use o token** nas demais rotas: aba `Authorization` → tipo `Bearer Token`
+4. **Crie uma conta e uma categoria**, copie os IDs e lance uma transação
+5. **Acesse o GraphQL** em `http://localhost:3000/graphql` e rode as queries de relatório
 
-O frontend abrirá automaticamente em [http://localhost:3001](http://localhost:3001).
+> Para encerrar o servidor, pressione `Ctrl + C` no terminal.
 
-### 👥 Usuários de Teste (criados pelo seed)
-| Email | Senha | Perfil |
-|---|---|---|
-| admin@aula.com | admin123 | admin |
-| arthur@aula.com | user123 | user |
-| bernardo@aula.com | user123 | user |
-| rodrigo@aula.com | user123 | user |
-| luiz@aula.com | user123 | user |
-
-> Para encerrar qualquer um dos servidores, pressione `Ctrl + C` no terminal.
+### 🔐 Criando um administrador
+O cadastro sempre cria usuários com papel `usuario` — por segurança, o papel nunca é aceito pelo corpo da requisição. Para tornar alguém administrador, edite o campo `papel` para `admin` diretamente no MongoDB Atlas (**Browse Collections → usuarios**) e faça login novamente para gerar um token atualizado.
 
 ---
 
-<p align="center">© 2026 AniTrack</p>
+<p align="center">© 2026 FinTrack</p>
