@@ -1,3 +1,11 @@
+POST http://localhost:3000/auth/login BODY -> JSON:
+{
+  "email": "arthur@email.com",
+  "senha": "123456"
+}
+
+Authorization -> Bearer SEU TOKEN AQUI
+
 Saldo por conta:
 query {
   saldoPorConta {
