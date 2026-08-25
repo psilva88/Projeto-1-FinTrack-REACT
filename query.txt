@@ -1,0 +1,58 @@
+Saldo por conta:
+query {
+  saldoPorConta {
+    conta { nome tipo }
+    receitas
+    despesas
+    saldo
+    totalTransacoes
+  }
+}
+
+Gastos por categoria:
+query {
+  gastosPorCategoria(inicio: "2026-08-01", fim: "2026-08-31") {
+    categoria { nome }
+    total
+    quantidade
+    percentual
+  }
+}
+
+Resumo mensal:
+query {
+  resumoMensal(mes: 8, ano: 2026) {
+    mes
+    ano
+    totalReceitas
+    totalDespesas
+    saldo
+    quantidadeTransacoes
+    gastosPorCategoria {
+      categoria { nome }
+      total
+      percentual
+    }
+  }
+}
+
+Transações com relações:
+query {
+  transacoesComRelacoes(tipo: "despesa", limite: 10) {
+    descricao
+    valor
+    data
+    conta { nome }
+    categoria { nome }
+  }
+}
+
+Dashboard (a que justifica o GraphQL — traz tudo numa requisição só):
+query {
+  dashboard {
+    saldoGeral
+    saldoPorConta { conta { nome } saldo }
+    gastosPorCategoria { categoria { nome } total percentual }
+    ultimasTransacoes { descricao valor data categoria { nome } }
+  }
+}
