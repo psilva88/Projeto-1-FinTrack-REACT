@@ -1,0 +1,20 @@
+npm install
+
+node src/server.js
+
+MongoDB conectado com sucesso!
+Servidor rodando na porta 3000
+
+POST → http://localhost:3000/pessoas → Body → raw → JSON:
+
+{
+  "nome": "Maria Silva",
+  "email": "maria@email.com",
+  "idade": 25
+}
+
+E GET → http://localhost:3000/pessoas pra listar.
+
+Sobre o .env do Bernardo — o roteiro pede o banco chamado pessoas (...mongodb.net/pessoas). Se a string dele terminar com /fintrack, troca por /pessoas, senão as pessoas vão parar no banco do FinTrack. Se não tiver nome de banco nenhum, acrescenta /pessoas antes do ?.
+
+Uma diferença que vale reparar — o database.js do roteiro só dá console.error quando falha, sem process.exit(1). É por isso que o servidor sobe mesmo se o Mongo não conectar, e você só descobre o problema quando a rota dá erro 500. No FinTrack eu coloquei o process.exit(1), que derruba na hora. Se a Sheila perguntar, é uma diferença consciente, não erro.
