@@ -11,15 +11,6 @@
 | Categoria Transporte (despesa) | `6a94662bef5c4e000f2ffbb1` |
 | Categoria Lazer (despesa) | `6a946631ef5c4e000f2ffbb3` |
 
-Se precisar consultar de novo:
-
-```
-GET http://localhost:3000/contas
-GET http://localhost:3000/categorias
-```
-
-**Antes de apresentar:** rodar `gastosPorCategoria` e conferir se aparece mais de uma categoria. Com uma só, o percentual fica sempre 100% e o relatório fica pobre.
-
 ---
 
 ### 1. Abertura
