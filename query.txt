@@ -1,5 +1,3 @@
-Claude a professora passou o roteiro pratico 2 poderia fazer e acho wue é com base no roteiro 1
-
 POST http://localhost:3000/auth/login BODY -> JSON:
 {
   "email": "arthur@email.com",
