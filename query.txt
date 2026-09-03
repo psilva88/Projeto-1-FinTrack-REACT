@@ -64,3 +64,30 @@ query {
     ultimasTransacoes { descricao valor data categoria { nome } }
   }
 }
+
+Criar conta — POST http://localhost:3000/contas
+{
+  "nome": "Carteira",
+  "tipo": "carteira",
+  "saldoInicial": 150
+}
+
+Criar categoria — POST http://localhost:3000/categorias
+{
+  "nome": "Contas Fixas",
+  "tipo": "despesa"
+}
+
+Editar transação — PUT http://localhost:3000/transacoes/ID_DA_TRANSACAO
+{
+  "descricao": "Padaria (corrigido)",
+  "valor": 25.00
+}
+
+Editar conta — PUT http://localhost:3000/contas/6a89f4f9c3203df934c9b526
+{
+  "nome": "Nubank Principal"
+}
+
+Excluir transação — DELETE http://localhost:3000/transacoes/ID_DA_TRANSACAO
+Listar — GET http://localhost:3000/contas e GET http://localhost:3000/categorias
