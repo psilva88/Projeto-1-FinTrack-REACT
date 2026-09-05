@@ -86,6 +86,14 @@ Header: `Authorization: Bearer {token}`
   "conta": "6a89f4f9c3203df934c9b526",
   "categoria": "6a89f5b8c3203df934c9b535"
 }
+
+Criar conta — POST http://localhost:3000/contas
+
+{
+  "nome": "Carteira",
+  "tipo": "carteira",
+  "saldoInicial": 150
+}
 ```
 
 **201 Created** — os campos `conta` e `categoria` retornam com os dados completos via `populate`.
