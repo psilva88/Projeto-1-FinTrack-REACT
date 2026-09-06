@@ -71,9 +71,9 @@ Header: `Authorization: Bearer {token}`
 
 ---
 
-# 3. Conta e Categoria/Transações
+# 3. Categoria/Transações e Conta
 
-## 3.1 Criar categoria/transação
+## 3.1 Criar categoria/transação e Conta
 
 `POST http://localhost:3000/transacoes`
 
