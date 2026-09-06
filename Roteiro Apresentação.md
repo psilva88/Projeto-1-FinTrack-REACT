@@ -71,13 +71,36 @@ Header: `Authorization: Bearer {token}`
 
 ---
 
-# 3. Categoria/Transações e Conta
+# 3. Cadastro de recursos
 
-## 3.1 Criar categoria/transação e Conta
+## 3.1 Criar conta
 
-`POST http://localhost:3000/transacoes`
+POST http://localhost:3000/contas
 
-```json
+{
+  "nome": "Carteira",
+  "tipo": "carteira",
+  "saldoInicial": 150
+}
+
+201 Created — retorna a conta com o _id gerado.
+Com "tipo": "poupanca" → 400, valor fora do enum.
+
+## 3.2 Criar categoria
+
+POST http://localhost:3000/categorias
+
+{
+  "nome": "Contas Fixas",
+  "tipo": "despesa"
+}
+
+201 Created — retorna a categoria com o _id gerado.
+
+## 3.3 Criar transação
+
+POST http://localhost:3000/transacoes
+
 {
   "descricao": "Padaria",
   "valor": 18.90,
@@ -87,31 +110,18 @@ Header: `Authorization: Bearer {token}`
   "categoria": "6a89f5b8c3203df934c9b535"
 }
 
-```
-
-`Criar conta — POST http://localhost:3000/contas`
-```json
-{
-  "nome": "Carteira",
-  "tipo": "carteira",
-  "saldoInicial": 150
-}
-```
-
-**201 Created** — os campos `conta` e `categoria` retornam com os dados completos via `populate`.
+201 Created — os campos conta e categoria retornam com os dados completos via populate.
 Antes de gravar, o sistema verifica se a conta e a categoria pertencem ao usuário autenticado.
 
-## 3.2 Validação
+## 3.4 Validação
 
-Mesma requisição com `"valor": 0`
+POST http://localhost:3000/transacoes com "valor": 0
+400 Bad Request — regras do schema do Mongoose: required, enum, min e match.
 
-**400 Bad Request** — regras definidas no schema do Mongoose: `required`, `enum`, `min` e `match`.
+## 3.5 Integridade dos relacionamentos
 
-## 3.3 Integridade dos relacionamentos
-
-`DELETE http://localhost:3000/contas/6a89f4f9c3203df934c9b526`
-
-**409 Conflict** — a exclusão é bloqueada enquanto houver transações vinculadas à conta.
+DELETE http://localhost:3000/contas/6a89f4f9c3203df934c9b526
+409 Conflict — bloqueada enquanto houver transações vinculadas à conta.
 
 ---
 
