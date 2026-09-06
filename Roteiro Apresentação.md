@@ -87,8 +87,10 @@ Header: `Authorization: Bearer {token}`
   "categoria": "6a89f5b8c3203df934c9b535"
 }
 
-Criar conta — POST http://localhost:3000/contas
+```
 
+`Criar conta — POST http://localhost:3000/contas`
+```json
 {
   "nome": "Carteira",
   "tipo": "carteira",
