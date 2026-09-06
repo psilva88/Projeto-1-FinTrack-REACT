@@ -1,3 +1,172 @@
+# FinTrack — Fase 1
+
+Roteiro de testes da API. Servidor em `http://localhost:3000`.
+
+## Identificadores
+
+| Registro | ID |
+|---|---|
+| Usuário arthur@email.com | `6a89ed3723b5a5ba90d1d94c` |
+| Conta Nubank | `6a89f4f9c3203df934c9b526` |
+| Categoria Alimentação (despesa) | `6a89f5b8c3203df934c9b535` |
+| Categoria Salário (receita) | `6a89f5d4c3203df934c9b537` |
+| Categoria Transporte (despesa) | `6a94662bef5c4e000f2ffbb1` |
+| Categoria Lazer (despesa) | `6a946631ef5c4e000f2ffbb3` |
+
+---
+
+# 1. Autenticação
+
+## 1.1 Cadastro de usuário
+
+`POST http://localhost:3000/auth/register`
+
+```json
+{
+  "nome": "Teste Apresentação",
+  "email": "teste@email.com",
+  "senha": "123456"
+}
+```
+
+**201 Created** — retorna os dados do usuário e o token.
+A senha é gravada com hash bcrypt. O campo `papel` não é lido do corpo da requisição.
+
+**Variações:**
+
+| Requisição | Resposta |
+|---|---|
+| E-mail já cadastrado | 409 — "Este e-mail já está cadastrado" |
+| `"senha": "123"` | 400 — mínimo de 6 caracteres |
+
+## 1.2 Login
+
+`POST http://localhost:3000/auth/login`
+
+```json
+{
+  "email": "arthur@email.com",
+  "senha": "123456"
+}
+```
+
+**200 OK** — retorna o token, que carrega o id e o papel do usuário.
+
+Com senha incorreta: **401** — mensagem idêntica à de e-mail inexistente.
+
+## 1.3 Perfil do usuário autenticado
+
+`GET http://localhost:3000/auth/perfil`
+Header: `Authorization: Bearer {token}`
+
+**200 OK** — o campo `senha` não é retornado (`select: false` no model).
+
+---
+
+# 2. Controle de acesso
+
+`GET http://localhost:3000/contas` sem o header Authorization
+
+**401 Unauthorized** — todas as rotas de recurso passam pelo middleware de autenticação.
+
+---
+
+# 3. Cadastro de recursos
+
+## 3.1 Criar conta
+
+`POST http://localhost:3000/contas`
+
+```json
+{
+  "nome": "Carteira",
+  "tipo": "carteira",
+  "saldoInicial": 150
+}
+```
+
+**201 Created** — retorna a conta com o `_id` gerado.
+
+| Requisição | Resposta |
+|---|---|
+| `"tipo": "poupanca"` | 400 — valor fora do enum (carteira, banco, cartao) |
+| Nome repetido para o mesmo usuário | 409 — índice composto bloqueia |
+
+## 3.2 Criar categoria
+
+`POST http://localhost:3000/categorias`
+
+```json
+{
+  "nome": "Contas Fixas",
+  "tipo": "despesa"
+}
+```
+
+**201 Created** — retorna a categoria com o `_id` gerado.
+
+Filtro na listagem: `GET http://localhost:3000/categorias?tipo=receita`
+
+## 3.3 Criar transação
+
+`POST http://localhost:3000/transacoes`
+
+```json
+{
+  "descricao": "Padaria",
+  "valor": 18.90,
+  "tipo": "despesa",
+  "data": "2026-08-20",
+  "conta": "6a89f4f9c3203df934c9b526",
+  "categoria": "6a89f5b8c3203df934c9b535"
+}
+```
+
+**201 Created** — os campos `conta` e `categoria` retornam com os dados completos via `populate`.
+Antes de gravar, o sistema verifica se a conta e a categoria pertencem ao usuário autenticado.
+
+## 3.4 Validação
+
+`POST http://localhost:3000/transacoes` com `"valor": 0`
+
+**400 Bad Request** — regras definidas no schema do Mongoose: `required`, `enum`, `min` e `match`.
+
+## 3.5 Integridade dos relacionamentos
+
+`DELETE http://localhost:3000/contas/6a89f4f9c3203df934c9b526`
+
+**409 Conflict** — a exclusão é bloqueada enquanto houver transações vinculadas à conta.
+
+---
+
+# 4. Listagem e filtros
+
+```
+GET http://localhost:3000/transacoes
+GET http://localhost:3000/transacoes?tipo=despesa
+GET http://localhost:3000/transacoes?inicio=2026-08-01&fim=2026-08-31
+GET http://localhost:3000/transacoes?limite=2
+```
+
+A resposta contém `total`, `pagina`, `limite`, `totalPaginas` e o array `transacoes`.
+
+| Parâmetro | Função |
+|---|---|
+| `pagina` / `limite` | Paginação |
+| `tipo` | receita ou despesa |
+| `conta` / `categoria` | Filtro por ID |
+| `inicio` / `fim` | Período (AAAA-MM-DD) |
+
+---
+
+# 5. Autorização por perfil
+
+`GET http://localhost:3000/usuarios`
+
+| Token | Resposta |
+|---|---|
+| Usuário comum | 403 — rota restrita a administradores |
+| Administrador | 200 — lista de usuários, sem o campo senha |
 ---
 
 # 6. GraphQL
