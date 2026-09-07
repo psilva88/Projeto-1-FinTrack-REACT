@@ -17,7 +17,7 @@ Roteiro de testes da API. Servidor em `http://localhost:3000`.
 
 # 1. Autenticação
 
-## 1.1 Cadastro de usuário
+## *1.1 Cadastro de usuário
 
 `POST http://localhost:3000/auth/register`
 
@@ -39,7 +39,7 @@ A senha é gravada com hash bcrypt. O campo `papel` não é lido do corpo da req
 | E-mail já cadastrado | 409 — "Este e-mail já está cadastrado" |
 | `"senha": "123"` | 400 — mínimo de 6 caracteres |
 
-## 1.2 Login
+## *1.2 Login
 
 `POST http://localhost:3000/auth/login`
 
@@ -71,9 +71,9 @@ Header: `Authorization: Bearer {token}`
 
 ---
 
-# 3. Cadastro de recursos
+# *3. Cadastro de recursos
 
-## 3.1 Criar conta
+## *3.1 Criar conta
 
 `POST http://localhost:3000/contas`
 
@@ -92,7 +92,7 @@ Header: `Authorization: Bearer {token}`
 | `"tipo": "poupanca"` | 400 — valor fora do enum (carteira, banco, cartao) |
 | Nome repetido para o mesmo usuário | 409 — índice composto bloqueia |
 
-## 3.2 Criar categoria
+## *3.2 Criar categoria
 
 `POST http://localhost:3000/categorias`
 
@@ -107,7 +107,7 @@ Header: `Authorization: Bearer {token}`
 
 Filtro na listagem: `GET http://localhost:3000/categorias?tipo=receita`
 
-## 3.3 Criar transação
+## *3.3 Criar transação
 
 `POST http://localhost:3000/transacoes`
 
@@ -131,7 +131,7 @@ Antes de gravar, o sistema verifica se a conta e a categoria pertencem ao usuár
 
 **400 Bad Request** — regras definidas no schema do Mongoose: `required`, `enum`, `min` e `match`.
 
-## 3.5 Integridade dos relacionamentos
+## *3.5 Integridade dos relacionamentos
 
 `DELETE http://localhost:3000/contas/6a89f4f9c3203df934c9b526`
 
@@ -139,7 +139,7 @@ Antes de gravar, o sistema verifica se a conta e a categoria pertencem ao usuár
 
 ---
 
-# 4. Listagem e filtros
+# *4. Listagem e filtros
 
 ```
 GET http://localhost:3000/transacoes
@@ -159,7 +159,7 @@ A resposta contém `total`, `pagina`, `limite`, `totalPaginas` e o array `transa
 
 ---
 
-# 5. Autorização por perfil
+# *5. Autorização por perfil
 
 `GET http://localhost:3000/usuarios`
 
@@ -169,12 +169,12 @@ A resposta contém `total`, `pagina`, `limite`, `totalPaginas` e o array `transa
 | Administrador | 200 — lista de usuários, sem o campo senha |
 ---
 
-# 6. GraphQL
+# *6. GraphQL
 
 Endpoint: `http://localhost:3000/graphql`
 Header: `Authorization: Bearer {token}`
 
-## 6.1 Saldo consolidado por conta
+## *6.1 Saldo consolidado por conta
 
 ```graphql
 query {
@@ -189,7 +189,7 @@ query {
 
 Calculado por agregação no MongoDB: saldo inicial + receitas − despesas.
 
-## 6.2 Gastos agrupados por categoria
+## *6.2 Gastos agrupados por categoria
 
 ```graphql
 query {
@@ -203,7 +203,7 @@ query {
 
 Agrupa as despesas do período por categoria e calcula o percentual de cada uma.
 
-## 6.3 Dashboard
+## *6.3 Dashboard
 
 ```graphql
 query {
@@ -218,7 +218,7 @@ query {
 
 Retorna em uma única requisição os dados que, via REST, exigiriam três chamadas separadas (contas, transações e categorias) com o processamento feito no cliente.
 
-## 6.4 Controle de acesso
+## *6.4 Controle de acesso
 
 A mesma query sem o header Authorization retorna erro `UNAUTHENTICATED`.
 
