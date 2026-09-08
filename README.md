@@ -109,9 +109,11 @@ Cada documento guarda o `ObjectId` do usuário dono, garantindo que cada pessoa 
 ### 🔑 Autenticação — `/auth`
 | Método | Rota | Descrição | Protegida |
 |---|---|---|---|
-| POST | `/auth/register` | Cria um usuário e retorna o token | ❌ |
+| POST | `/auth/register` | Cria um usuário | ❌ |
 | POST | `/auth/login` | Faz login e retorna o token | ❌ |
 | GET | `/auth/perfil` | Retorna os dados do usuário logado | ✅ |
+
+> O token é emitido apenas no login. O cadastro se limita a criar o usuário.
 
 ### 👤 Usuários — `/usuarios`
 | Método | Rota | Descrição | Protegida |
@@ -171,7 +173,9 @@ GET /transacoes?pagina=1&limite=10&tipo=despesa&categoria={id}&conta={id}&inicio
 
 Disponível em `http://localhost:3000/graphql` com a interface do **Apollo Sandbox**.
 
-Enquanto o REST cuida do CRUD e da autenticação, o **GraphQL é responsável pelas consultas compostas e pelos relatórios**, evitando várias requisições para montar uma única tela.
+Enquanto o REST cuida do CRUD completo e da autenticação, o **GraphQL é responsável pelas consultas compostas, pelos relatórios e pelas mutations de transação**, evitando várias requisições para montar uma única tela.
+
+### Queries
 
 | Query | Descrição |
 |---|---|
@@ -181,6 +185,16 @@ Enquanto o REST cuida do CRUD e da autenticação, o **GraphQL é responsável p
 | `resumoMensal(mes, ano)` | Resumo fechado de um mês específico |
 | `transacoesComRelacoes(...)` | Transações com conta e categoria já carregadas |
 | `dashboard(inicio, fim)` | Tudo que a tela inicial precisa em uma única requisição |
+
+### Mutations
+
+| Mutation | Descrição |
+|---|---|
+| `criarTransacao(...)` | Cria uma transação para o usuário autenticado |
+| `atualizarTransacao(id, ...)` | Atualiza apenas os campos informados |
+| `excluirTransacao(id)` | Remove uma transação do usuário autenticado |
+
+As mutations seguem as mesmas regras das rotas REST: exigem token e validam se a conta e a categoria pertencem ao usuário autenticado. Uma transação criada por qualquer uma das duas interfaces é gravada na mesma coleção e aparece nas consultas da outra.
 
 ### Exemplo — Dashboard
 
@@ -209,6 +223,27 @@ query {
 }
 ```
 
+### Exemplo — Criar transação
+
+```graphql
+mutation {
+  criarTransacao(
+    descricao: "Lançamento via GraphQL"
+    valor: 42.50
+    tipo: "despesa"
+    data: "2026-08-25"
+    conta: "COLE_O_ID_DA_CONTA"
+    categoria: "COLE_O_ID_DA_CATEGORIA"
+  ) {
+    id
+    descricao
+    valor
+    conta { nome }
+    categoria { nome }
+  }
+}
+```
+
 > No Apollo Sandbox, o token vai na aba **Headers**: chave `Authorization`, valor `Bearer {token}`.
 
 ---
@@ -217,6 +252,9 @@ query {
 
 ```
 Projeto-1-FinTrack-REACT/
+│
+├── FinTrack.postman_collection.json   ← Coleção de endpoints para importar no Postman
+├── README.md
 │
 └── fintrack-backend/                  ← API (Node.js + Express + MongoDB)
     ├── src/
@@ -248,8 +286,8 @@ Projeto-1-FinTrack-REACT/
     │   │   └── admin.js               ← Autorização por perfil
     │   │
     │   └── graphql/
-    │       ├── typeDefs.js            ← Schema (tipos e queries)
-    │       ├── resolvers.js           ← Agregações e relatórios
+    │       ├── typeDefs.js            ← Schema (tipos, queries e mutations)
+    │       ├── resolvers.js           ← Agregações, relatórios e mutations
     │       └── index.js               ← Configuração do Apollo Server
     │
     ├── .env                           ← Variáveis (não versionado)
@@ -320,7 +358,20 @@ REST:    http://localhost:3000
 GraphQL: http://localhost:3000/graphql
 ```
 
-### 🧪 Passo 6 — Testar
+### 📮 Passo 6 — Importar a coleção do Postman
+
+O arquivo `FinTrack.postman_collection.json`, na raiz do repositório, contém todas as rotas REST e as operações GraphQL prontas para uso, organizadas em pastas.
+
+No Postman: **Import** → selecione o arquivo.
+
+Duas automações já vêm configuradas:
+
+- Ao executar **1. Auth → Login**, o token é salvo na variável `{{token}}` e reutilizado em todas as requisições protegidas
+- Ao criar conta e categoria, os IDs são salvos em `{{contaId}}` e `{{categoriaId}}`, já preenchidos nas requisições de transação
+
+Ordem sugerida: Login → Criar conta → Criar categoria → Criar transação → demais requisições.
+
+### 🧪 Passo 7 — Testar manualmente
 1. **Cadastre um usuário** — `POST http://localhost:3000/auth/register`
    ```json
    {
@@ -329,7 +380,7 @@ GraphQL: http://localhost:3000/graphql
      "senha": "123456"
    }
    ```
-2. **Copie o token** retornado na resposta
+2. **Faça login** — `POST http://localhost:3000/auth/login` com o e-mail e a senha. O token é retornado nesta rota.
 3. **Use o token** nas demais rotas: aba `Authorization` → tipo `Bearer Token`
 4. **Crie uma conta e uma categoria**, copie os IDs e lance uma transação
 5. **Acesse o GraphQL** em `http://localhost:3000/graphql` e rode as queries de relatório
