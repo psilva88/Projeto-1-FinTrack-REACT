@@ -1,6 +1,11 @@
 # FinTrack — Fase 1
 
+
 Roteiro de testes da API. Servidor em `http://localhost:3000`.
+
+Todas as rotas estão disponíveis na coleção do Postman (`FinTrack.postman_collection.json`),
+incluindo as que não aparecem neste roteiro. Ao importar e executar o Login, o token é salvo
+automaticamente e reutilizado nas demais requisições.
 
 ## Identificadores
 
