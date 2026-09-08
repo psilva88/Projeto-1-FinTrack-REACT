@@ -375,8 +375,8 @@ Ordem sugerida: Login → Criar conta → Criar categoria → Criar transação 
 1. **Cadastre um usuário** — `POST http://localhost:3000/auth/register`
    ```json
    {
-     "nome": "Arthur",
-     "email": "arthur@email.com",
+     "nome": "1Usuário 1Teste",
+     "email": "1usuario1@teste.com",
      "senha": "123456"
    }
    ```
