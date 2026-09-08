@@ -1,0 +1,1243 @@
+{
+  "info": {
+    "name": "FinTrack API — Fase 1",
+    "description": "Coleção de endpoints do FinTrack.\n\nSETUP\n1. Suba o servidor com `npm run dev`\n2. Rode 'Auth > Login' — o token é salvo automaticamente na variável {{token}} e usado em todas as requisições protegidas\n3. Rode 'Contas > Criar conta' e 'Categorias > Criar categoria' — os IDs são salvos em {{contaId}} e {{categoriaId}}\n4. As requisições de transação já usam essas variáveis\n\nVARIÁVEIS\nbaseUrl, token, contaId, categoriaId, transacaoId, usuarioId",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "contaId",
+      "value": ""
+    },
+    {
+      "key": "categoriaId",
+      "value": ""
+    },
+    {
+      "key": "transacaoId",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Cadastrar usuário",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "201 Created. Retorna os dados do usuário, SEM token. A autenticação é feita no login.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Novo Usuario\",\n  \"email\": \"novo@email.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Cadastrar — e-mail duplicado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "409 Conflict — e-mail já cadastrado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Novo Usuario\",\n  \"email\": \"novo@email.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Cadastrar — senha curta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "400 Bad Request — mínimo de 6 caracteres.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"email\": \"curta@email.com\",\n  \"senha\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "200 OK. Retorna o token. O script de teste salva o token na variável {{token}} automaticamente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"arthur@email.com\",\n  \"senha\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token salvo na variável {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — senha incorreta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "401 Unauthorized.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"arthur@email.com\",\n  \"senha\": \"senhaerrada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Perfil do usuário autenticado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/perfil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "perfil"
+              ]
+            },
+            "description": "200 OK. O campo senha não é retornado."
+          }
+        },
+        {
+          "name": "Perfil — sem token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/perfil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "perfil"
+              ]
+            },
+            "description": "401 Unauthorized — demonstra o middleware de autenticação.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ],
+      "description": "Cadastro, login e perfil. Rode o Login primeiro para popular {{token}}."
+    },
+    {
+      "name": "2. Usuários",
+      "item": [
+        {
+          "name": "Listar usuários (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            },
+            "description": "200 com token de admin. 403 com token de usuário comum."
+          }
+        },
+        {
+          "name": "Buscar usuário por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            },
+            "description": "200 para o próprio usuário ou admin. 403 para outros."
+          }
+        },
+        {
+          "name": "Atualizar usuário",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            },
+            "description": "200 OK. Apenas o próprio usuário ou um admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Nome Atualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir usuário (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/{{usuarioId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuarioId}}"
+              ]
+            },
+            "description": "200 OK. Restrito a administradores."
+          }
+        }
+      ],
+      "description": "Gestão de usuários. Listar e excluir são restritos a administradores."
+    },
+    {
+      "name": "3. Contas",
+      "item": [
+        {
+          "name": "Criar conta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contas"
+              ]
+            },
+            "description": "201 Created. O ID é salvo na variável {{contaId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Carteira\",\n  \"tipo\": \"carteira\",\n  \"saldoInicial\": 150\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json._id) {",
+                  "    pm.collectionVariables.set('contaId', json._id);",
+                  "    console.log('ID salvo em {{contaId}}: ' + json._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar conta — tipo inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contas"
+              ]
+            },
+            "description": "400 Bad Request — enum aceita apenas carteira, banco ou cartao.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Poupança\",\n  \"tipo\": \"poupanca\",\n  \"saldoInicial\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar contas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contas"
+              ]
+            },
+            "description": "200 OK. Retorna apenas as contas do usuário autenticado."
+          }
+        },
+        {
+          "name": "Buscar conta por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contas/{{contaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contas",
+                "{{contaId}}"
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Atualizar conta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contas/{{contaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contas",
+                "{{contaId}}"
+              ]
+            },
+            "description": "200 OK.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Carteira Principal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir conta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/contas/{{contaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contas",
+                "{{contaId}}"
+              ]
+            },
+            "description": "200 OK se não houver transações vinculadas. 409 Conflict caso existam."
+          }
+        }
+      ],
+      "description": "CRUD de contas do usuário autenticado."
+    },
+    {
+      "name": "4. Categorias",
+      "item": [
+        {
+          "name": "Criar categoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias"
+              ]
+            },
+            "description": "201 Created. O ID é salvo na variável {{categoriaId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Contas Fixas\",\n  \"tipo\": \"despesa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json._id) {",
+                  "    pm.collectionVariables.set('categoriaId', json._id);",
+                  "    console.log('ID salvo em {{categoriaId}}: ' + json._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar categorias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias"
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Listar categorias — filtro por tipo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categorias?tipo=receita",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "receita"
+                }
+              ]
+            },
+            "description": "200 OK. Retorna apenas categorias de receita."
+          }
+        },
+        {
+          "name": "Buscar categoria por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Atualizar categoria",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "description": "200 OK.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Despesas Fixas\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir categoria",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categorias/{{categoriaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categorias",
+                "{{categoriaId}}"
+              ]
+            },
+            "description": "200 OK se não houver transações vinculadas. 409 Conflict caso existam."
+          }
+        }
+      ],
+      "description": "CRUD de categorias do usuário autenticado."
+    },
+    {
+      "name": "5. Transações",
+      "item": [
+        {
+          "name": "Criar transação",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes"
+              ]
+            },
+            "description": "201 Created. Conta e categoria retornam populadas. O ID é salvo em {{transacaoId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Padaria\",\n  \"valor\": 18.9,\n  \"tipo\": \"despesa\",\n  \"data\": \"2026-08-20\",\n  \"conta\": \"{{contaId}}\",\n  \"categoria\": \"{{categoriaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json._id) {",
+                  "    pm.collectionVariables.set('transacaoId', json._id);",
+                  "    console.log('ID salvo em {{transacaoId}}: ' + json._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar transação — valor inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes"
+              ]
+            },
+            "description": "400 Bad Request — o valor deve ser maior que zero.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Teste\",\n  \"valor\": 0,\n  \"tipo\": \"despesa\",\n  \"conta\": \"{{contaId}}\",\n  \"categoria\": \"{{categoriaId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar transações",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes"
+              ]
+            },
+            "description": "200 OK. Retorna total, pagina, limite, totalPaginas e o array de transações."
+          }
+        },
+        {
+          "name": "Listar — filtro por tipo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes?tipo=despesa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "despesa"
+                }
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Listar — filtro por período",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes?inicio=2026-08-01&fim=2026-08-31",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes"
+              ],
+              "query": [
+                {
+                  "key": "inicio",
+                  "value": "2026-08-01"
+                },
+                {
+                  "key": "fim",
+                  "value": "2026-08-31"
+                }
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Listar — paginação",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes?pagina=1&limite=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes"
+              ],
+              "query": [
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "limite",
+                  "value": "2"
+                }
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Buscar transação por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes/{{transacaoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes",
+                "{{transacaoId}}"
+              ]
+            },
+            "description": "200 OK."
+          }
+        },
+        {
+          "name": "Atualizar transação",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes/{{transacaoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes",
+                "{{transacaoId}}"
+              ]
+            },
+            "description": "200 OK.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"Padaria (corrigido)\",\n  \"valor\": 25.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Excluir transação",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transacoes/{{transacaoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transacoes",
+                "{{transacaoId}}"
+              ]
+            },
+            "description": "200 OK."
+          }
+        }
+      ],
+      "description": "CRUD de transações, com paginação e filtros."
+    },
+    {
+      "name": "6. GraphQL",
+      "item": [
+        {
+          "name": "Query — eu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  eu {\n    id\n    nome\n    email\n    papel\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Dados do usuário autenticado."
+          }
+        },
+        {
+          "name": "Query — saldoPorConta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  saldoPorConta {\n    conta { nome tipo }\n    receitas\n    despesas\n    saldo\n    totalTransacoes\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Saldo consolidado por conta: saldo inicial + receitas - despesas."
+          }
+        },
+        {
+          "name": "Query — gastosPorCategoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  gastosPorCategoria(inicio: \"2026-08-01\", fim: \"2026-08-31\") {\n    categoria { nome }\n    total\n    quantidade\n    percentual\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Despesas agrupadas por categoria no período, com percentual."
+          }
+        },
+        {
+          "name": "Query — resumoMensal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  resumoMensal(mes: 8, ano: 2026) {\n    mes\n    ano\n    totalReceitas\n    totalDespesas\n    saldo\n    quantidadeTransacoes\n    gastosPorCategoria { categoria { nome } total percentual }\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Resumo fechado de um mês específico."
+          }
+        },
+        {
+          "name": "Query — transacoesComRelacoes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  transacoesComRelacoes(tipo: \"despesa\", limite: 10) {\n    id\n    descricao\n    valor\n    data\n    conta { nome }\n    categoria { nome }\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Transações com conta e categoria já carregadas."
+          }
+        },
+        {
+          "name": "Query — dashboard",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  dashboard {\n    saldoGeral\n    saldoPorConta { conta { nome } saldo }\n    gastosPorCategoria { categoria { nome } total percentual }\n    ultimasTransacoes { descricao valor data categoria { nome } }\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Todos os dados da tela inicial em uma única requisição."
+          }
+        },
+        {
+          "name": "Mutation — criarTransacao",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  criarTransacao(\n    descricao: \"Lançamento via GraphQL\"\n    valor: 42.50\n    tipo: \"despesa\"\n    data: \"2026-08-25\"\n    conta: \"{{contaId}}\"\n    categoria: \"{{categoriaId}}\"\n  ) {\n    id\n    descricao\n    valor\n    conta { nome }\n    categoria { nome }\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Cria uma transação. Valida se a conta e a categoria pertencem ao usuário."
+          }
+        },
+        {
+          "name": "Mutation — atualizarTransacao",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  atualizarTransacao(\n    id: \"{{transacaoId}}\"\n    descricao: \"Descrição atualizada\"\n    valor: 55.00\n  ) {\n    id\n    descricao\n    valor\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Atualiza apenas os campos informados."
+          }
+        },
+        {
+          "name": "Mutation — excluirTransacao",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  excluirTransacao(id: \"{{transacaoId}}\")\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Remove a transação do usuário autenticado."
+          }
+        },
+        {
+          "name": "Query — sem token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "graphql"
+              ]
+            },
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  saldoPorConta {\n    saldo\n  }\n}",
+                "variables": "{}"
+              }
+            },
+            "description": "Retorna erro UNAUTHENTICATED — mesmo controle de acesso do REST.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ],
+      "description": "Queries de relatório e mutations de escrita, no endpoint /graphql."
+    }
+  ]
+}
