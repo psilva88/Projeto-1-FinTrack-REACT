@@ -342,3 +342,8 @@ O cadastro sempre cria usuários com papel `usuario` — por segurança, o papel
 ---
 
 <p align="center">© 2026 FinTrack</p>
+
+MONGODB_URI=mongodb+srv://genshinsubzero88_db_user:KCasC9VWfSXtuedB@fintrack.o20booy.mongodb.net/fintrack?retryWrites=true&w=majority&appName=FinTrack
+PORT=3000
+JWT_SECRET=bananinha123
+JWT_EXPIRES=7d
