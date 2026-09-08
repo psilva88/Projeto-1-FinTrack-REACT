@@ -28,8 +28,8 @@ automaticamente e reutilizado nas demais requisições.
 
 ```json
 {
-  "nome": "Teste Apresentação",
-  "email": "teste@email.com",
+  "nome": "Teste3 Apresentação",
+  "email": "teste3@email.com",
   "senha": "123456"
 }
 ```
