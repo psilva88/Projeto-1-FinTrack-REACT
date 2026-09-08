@@ -1,6 +1,5 @@
 # FinTrack — Fase 1
 
-
 Roteiro de testes da API. Servidor em `http://localhost:3000`.
 
 Todas as rotas estão disponíveis na coleção do Postman (`FinTrack.postman_collection.json`),
@@ -34,7 +33,8 @@ automaticamente e reutilizado nas demais requisições.
 }
 ```
 
-**201 Created** — retorna os dados do usuário e o token.
+**201 Created** — retorna a mensagem de confirmação e os dados do usuário.
+O token **não** é gerado nesta rota: o cadastro apenas cria o usuário, e a autenticação acontece no login.
 A senha é gravada com hash bcrypt. O campo `papel` não é lido do corpo da requisição.
 
 **Variações:**
@@ -172,6 +172,7 @@ A resposta contém `total`, `pagina`, `limite`, `totalPaginas` e o array `transa
 |---|---|
 | Usuário comum | 403 — rota restrita a administradores |
 | Administrador | 200 — lista de usuários, sem o campo senha |
+
 ---
 
 # *6. GraphQL
@@ -223,19 +224,77 @@ query {
 
 Retorna em uma única requisição os dados que, via REST, exigiriam três chamadas separadas (contas, transações e categorias) com o processamento feito no cliente.
 
-## *6.4 Controle de acesso
+## *6.4 Mutations
 
-A mesma query sem o header Authorization retorna erro `UNAUTHENTICATED`.
+As operações de escrita seguem as mesmas regras das rotas REST: exigem token e validam se a conta e a categoria pertencem ao usuário autenticado.
+
+**Criar transação**
+
+```graphql
+mutation {
+  criarTransacao(
+    descricao: "Lançamento via GraphQL"
+    valor: 42.50
+    tipo: "despesa"
+    data: "2026-08-25"
+    conta: "6a89f4f9c3203df934c9b526"
+    categoria: "6a89f5b8c3203df934c9b535"
+  ) {
+    id
+    descricao
+    valor
+    conta { nome }
+    categoria { nome }
+  }
+}
+```
+
+Retorna a transação criada, já com conta e categoria populadas.
+
+**Atualizar transação**
+
+```graphql
+mutation {
+  atualizarTransacao(
+    id: "COLE_O_ID_DA_TRANSACAO"
+    descricao: "Descrição atualizada"
+    valor: 55.00
+  ) {
+    id
+    descricao
+    valor
+  }
+}
+```
+
+Aplica apenas os campos informados na mutation.
+
+**Excluir transação**
+
+```graphql
+mutation {
+  excluirTransacao(id: "COLE_O_ID_DA_TRANSACAO")
+}
+```
+
+Retorna a mensagem de confirmação. Uma transação de outro usuário resulta em `NOT_FOUND`.
+
+## *6.5 Controle de acesso
+
+Qualquer query ou mutation sem o header Authorization retorna erro `UNAUTHENTICATED`.
 
 ---
 
 # Decisões técnicas
 
 **Divisão REST / GraphQL**
-REST para CRUD e autenticação. GraphQL para consultas compostas e relatórios. Definida no documento de escopo do projeto.
+REST para CRUD e autenticação. GraphQL para consultas compostas, relatórios e as mutations de transação. Uma transação criada por qualquer uma das duas interfaces é gravada na mesma coleção e aparece nas consultas da outra.
 
 **Isolamento de dados**
 Todas as consultas filtram por `usuario: req.usuario.id`, obtido do token e nunca do corpo da requisição. Um recurso de outro usuário retorna 404.
+
+**Cadastro sem token**
+A rota de cadastro apenas cria o usuário. O token é emitido exclusivamente no login, mantendo separadas as responsabilidades de registro e autenticação.
 
 **Atribuição de perfil**
 O cadastro sempre cria com papel `usuario`. A promoção a administrador é feita diretamente no banco.
@@ -245,6 +304,17 @@ As rotas de atualização usam PUT aceitando campos parciais, por conveniência 
 
 **Modelagem**
 Quatro entidades — Usuario, Conta, Categoria e Transacao — com cinco relacionamentos muitos-para-um. A Transacao referencia usuário, conta e categoria.
+
+---
+
+# Ajustes realizados após a apresentação
+
+| Ajuste | O que mudou |
+|---|---|
+| Token no cadastro | `POST /auth/register` deixou de retornar o token. A emissão passou a ocorrer apenas no login. |
+| Mutations no GraphQL | Adicionadas `criarTransacao`, `atualizarTransacao` e `excluirTransacao`, com o mesmo controle de acesso das queries. |
+| Coleção de endpoints | Criado o arquivo `FinTrack.postman_collection.json` com as 20 rotas REST e as operações GraphQL, com token e IDs salvos automaticamente em variáveis. |
+| Versionamento | Adicionado o `.gitignore` para excluir `node_modules` e `.env` do repositório. |
 
 ---
 
