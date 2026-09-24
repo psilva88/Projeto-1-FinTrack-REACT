@@ -29,7 +29,9 @@
 
 O **FinTrack** resolve a dificuldade que as pessoas têm de acompanhar para onde vai o dinheiro ao longo do mês. O sistema evita que o usuário dependa de anotações soltas, planilhas manuais ou da própria memória, centralizando todas as receitas e despesas em um único lugar, organizadas por conta e por categoria.
 
-Esta é a **Fase 1** do projeto, na qual foi desenvolvido o **backend completo** da aplicação: banco de dados, validação de dados, relacionamento entre entidades, segurança com JWT e as duas interfaces de serviços WEB exigidas — **RESTful** e **GraphQL**.
+Este é o **backend** da aplicação, desenvolvido na **Fase 1** do projeto: banco de dados, validação de dados, relacionamento entre entidades, segurança com JWT e as duas interfaces de serviços WEB exigidas — **RESTful** e **GraphQL**.
+
+Na **Fase 2**, com a chegada do frontend, o backend recebeu dois acréscimos: o **CORS**, que libera o consumo da API pela aplicação React, e as **mutations de conta e de categoria** no GraphQL, completando o CRUD das três entidades por essa interface. O restante permaneceu como na entrega da Fase 1.
 
 Cada usuário cadastra suas próprias contas (carteira, banco, cartão) e categorias (alimentação, transporte, lazer), e a partir delas lança suas transações. Cada pessoa enxerga apenas os próprios dados, enquanto o administrador tem acesso à gestão de usuários.
 
@@ -45,6 +47,7 @@ Cada usuário cadastra suas próprias contas (carteira, banco, cartão) e catego
 | **GraphQL** | Linguagem de consulta dos relatórios |
 | **JWT (jsonwebtoken)** | Autenticação e autorização por token |
 | **bcryptjs** | Criptografia das senhas |
+| **cors** | Libera o consumo da API pelo frontend |
 | **dotenv** | Variáveis de ambiente |
 | **nodemon** | Reinício automático em desenvolvimento |
 
@@ -173,13 +176,15 @@ GET /transacoes?pagina=1&limite=10&tipo=despesa&categoria={id}&conta={id}&inicio
 
 Disponível em `http://localhost:3000/graphql` com a interface do **Apollo Sandbox**.
 
-Enquanto o REST cuida do CRUD completo e da autenticação, o **GraphQL é responsável pelas consultas compostas, pelos relatórios e pelas mutations de transação**, evitando várias requisições para montar uma única tela.
+Enquanto o REST cuida da autenticação e do CRUD de usuários, o **GraphQL concentra as consultas compostas, os relatórios e o CRUD de contas, categorias e transações** — é por ele que o frontend conversa com a API em todas as telas internas, evitando várias requisições para montar uma única tela.
 
 ### Queries
 
 | Query | Descrição |
 |---|---|
 | `eu` | Dados do usuário autenticado |
+| `contas` | Lista as contas do usuário autenticado |
+| `categorias(tipo)` | Lista as categorias, com filtro opcional por `receita` ou `despesa` |
 | `saldoPorConta` | Saldo consolidado de cada conta (saldo inicial + receitas − despesas) |
 | `gastosPorCategoria(inicio, fim)` | Total gasto agrupado por categoria, com percentual |
 | `resumoMensal(mes, ano)` | Resumo fechado de um mês específico |
@@ -190,11 +195,19 @@ Enquanto o REST cuida do CRUD completo e da autenticação, o **GraphQL é respo
 
 | Mutation | Descrição |
 |---|---|
+| `criarConta(...)` | Cria uma conta para o usuário autenticado |
+| `atualizarConta(id, ...)` | Atualiza apenas os campos informados |
+| `excluirConta(id)` | Remove uma conta que não tenha transações vinculadas |
+| `criarCategoria(...)` | Cria uma categoria para o usuário autenticado |
+| `atualizarCategoria(id, ...)` | Atualiza apenas os campos informados |
+| `excluirCategoria(id)` | Remove uma categoria que não tenha transações vinculadas |
 | `criarTransacao(...)` | Cria uma transação para o usuário autenticado |
 | `atualizarTransacao(id, ...)` | Atualiza apenas os campos informados |
 | `excluirTransacao(id)` | Remove uma transação do usuário autenticado |
 
-As mutations seguem as mesmas regras das rotas REST: exigem token e validam se a conta e a categoria pertencem ao usuário autenticado. Uma transação criada por qualquer uma das duas interfaces é gravada na mesma coleção e aparece nas consultas da outra.
+As mutations seguem as mesmas regras das rotas REST: exigem token, gravam sempre no nome do usuário autenticado e validam se a conta e a categoria informadas pertencem a ele. Um registro criado por qualquer uma das duas interfaces é gravado na mesma coleção e aparece nas consultas da outra.
+
+Os erros seguem o padrão do GraphQL: a resposta chega com **status 200** e o problema vem descrito dentro de `errors`, com um código em `extensions` (`UNAUTHENTICATED`, `BAD_USER_INPUT`, `NOT_FOUND` ou `CONFLICT`).
 
 ### Exemplo — Dashboard
 
@@ -244,6 +257,28 @@ mutation {
 }
 ```
 
+### Exemplo — Criar conta e categoria
+
+```graphql
+mutation {
+  criarConta(nome: "Banco Inter", tipo: "banco", saldoInicial: 1200.00) {
+    id
+    nome
+    saldoInicial
+  }
+}
+```
+
+```graphql
+mutation {
+  criarCategoria(nome: "Alimentação", tipo: "despesa") {
+    id
+    nome
+    tipo
+  }
+}
+```
+
 > No Apollo Sandbox, o token vai na aba **Headers**: chave `Authorization`, valor `Bearer {token}`.
 
 ---
@@ -253,12 +288,14 @@ mutation {
 ```
 Projeto-1-FinTrack-REACT/
 │
-├── FinTrack.postman_collection.json   ← Coleção de endpoints para importar no Postman
-├── README.md
+├── README.md                          ← Visão geral do projeto (backend + frontend)
+├── fintrack-frontend/                 ← Interface (React + Vite)
 │
 └── fintrack-backend/                  ← API (Node.js + Express + MongoDB)
+    ├── README.md                      ← Este arquivo
+    ├── FinTrack.postman_collection.json   ← Coleção do Postman
     ├── src/
-    │   ├── server.js                  ← Ponto de entrada (rotas + middlewares)
+    │   ├── server.js                  ← Ponto de entrada (CORS, rotas e middlewares)
     │   ├── database.js                ← Conexão com o MongoDB Atlas
     │   │
     │   ├── models/
@@ -286,8 +323,8 @@ Projeto-1-FinTrack-REACT/
     │   │   └── admin.js               ← Autorização por perfil
     │   │
     │   └── graphql/
-    │       ├── typeDefs.js            ← Schema (tipos, queries e mutations)
-    │       ├── resolvers.js           ← Agregações, relatórios e mutations
+    │       ├── typeDefs.js            ← Schema (tipos, 8 queries e 9 mutations)
+    │       ├── resolvers.js           ← Agregações, relatórios e CRUD
     │       └── index.js               ← Configuração do Apollo Server
     │
     ├── .env                           ← Variáveis (não versionado)
@@ -360,7 +397,7 @@ GraphQL: http://localhost:3000/graphql
 
 ### 📮 Passo 6 — Importar a coleção do Postman
 
-O arquivo `FinTrack.postman_collection.json`, na raiz do repositório, contém todas as rotas REST e as operações GraphQL prontas para uso, organizadas em pastas.
+O arquivo `FinTrack.postman_collection.json`, nesta pasta, contém todas as rotas REST e as operações GraphQL prontas para uso, organizadas em pastas.
 
 No Postman: **Import** → selecione o arquivo.
 
