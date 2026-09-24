@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/be46d166-7fb3-48b9-a552-276973205862" alt="FinTrack Logo" width="600"/>
+  <img src="https://github.com/user-attachments/assets/d0d0ebcf-1522-453f-a14c-3007b56995cf" alt="FinTrack Logo" width="600"/>
 </p>
 
 <p align="center">
