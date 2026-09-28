@@ -259,12 +259,16 @@ GraphQL: http://localhost:3000/graphql
 
 ### 💻 Passo 4 — Rodar o frontend (Terminal 2)
 
-Abra um **segundo terminal**, deixando o backend rodando. A pasta já vem com o arquivo `.env` apontando para a API local:
+Abra um **segundo terminal**, deixando o backend rodando.
+
+Dentro da pasta `fintrack-frontend`, copie o `.env.example` para `.env`. Ele já vem apontando para a API local, não precisa alterar nada:
 
 ```
 VITE_API_URL=http://localhost:3000
 VITE_GRAPHQL_URL=http://localhost:3000/graphql
 ```
+
+> Assim como no backend, o `.env` não é versionado — por isso ele não vem junto ao baixar o repositório. Sem esse arquivo o endereço da API fica indefinido e o login falha.
 
 ```bash
 cd fintrack-frontend
