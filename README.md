@@ -131,7 +131,7 @@ Cada documento guarda o `ObjectId` do usuário dono, garantindo o isolamento dos
 ## 🖥️ Telas da Aplicação
 
 ### 🔐 Login e Cadastro
-Entrada do sistema. O cadastro cria o usuário com a senha criptografada; o login devolve o token JWT, que fica salvo no navegador e é enviado em todas as requisições seguintes. A sessão é recuperada ao recarregar a página.
+Entrada do sistema. O cadastro cria o usuário com a senha criptografada e leva a pessoa para a tela de login — autenticar é um passo separado, e nenhum token é emitido no cadastro. O login devolve o token JWT, que fica salvo no navegador e é enviado em todas as requisições seguintes. A sessão é recuperada ao recarregar a página.
 
 ### 📊 Resumo (`/dashboard`)
 Tela inicial. Reúne, em uma única requisição GraphQL:
@@ -151,6 +151,13 @@ CRUD das contas, mostrando saldo inicial, saldo atual e quantidade de transaçõ
 
 ### 🏷️ Categorias (`/categorias`)
 CRUD das categorias, com filtro por receita ou despesa.
+
+### 🛡️ Administração (`/admin`)
+Visível apenas para quem tem o papel de **administrador** — o link nem aparece na navegação dos demais, e quem tentar acessar pela URL é devolvido ao Resumo.
+
+Reúne os números gerais da plataforma (usuários, administradores, contas, categorias, transações e o saldo somado de todos os usuários, calculado com a mesma fórmula do Resumo) e a gestão dos usuários cadastrados, com promoção e rebaixamento de papel e exclusão de conta.
+
+Excluir um usuário apaga em cascata as contas, categorias e transações dele: os dados financeiros pertencem à pessoa e saem junto com ela. Antes de confirmar, o sistema informa quantos registros serão apagados — essa contagem é consultada apenas nesse momento, e nenhum valor em dinheiro de outro usuário aparece no painel.
 
 ---
 
@@ -190,12 +197,13 @@ Projeto-1-FinTrack-REACT/
     │   ├── services/
     │   │   ├── apollo.js              ← Cliente GraphQL com o token
     │   │   ├── authService.js         ← Chamadas de autenticação
+    │   │   ├── usuarioService.js      ← Gestão de usuários (REST)
     │   │   └── pwa.js                 ← Registro do Service Worker
     │   ├── graphql/
     │   │   ├── queries.js             ← Consultas
     │   │   └── mutations.js           ← Operações de escrita
-    │   ├── components/                ← Navbar, gráfico, modal, avisos
-    │   ├── pages/                     ← Login, Cadastro, Dashboard, CRUDs
+    │   ├── components/                ← Navbar, gráfico, modal, rotas protegidas
+    │   ├── pages/                     ← Login, Cadastro, Dashboard, CRUDs, Admin
     │   └── utils/                     ← Formatação e tratamento de erros
     ├── .env                           ← Endereço da API (não versionado)
     └── package.json
@@ -326,7 +334,7 @@ Resumo:
 | **RESTful** (Express) | Autenticação e CRUD completo das quatro entidades — 20 rotas |
 | **GraphQL** (Apollo Server) | Consultas compostas, relatórios e CRUD de contas, categorias e transações |
 
-O frontend consome o GraphQL em todas as telas internas e usa o REST apenas no login e no cadastro.
+O frontend consome o GraphQL em todas as telas internas e usa o REST na autenticação e na gestão de usuários do painel de administração.
 
 ### 📮 Coleção do Postman
 
@@ -343,6 +351,7 @@ No Postman: **Import** → selecione o arquivo. Ao executar **1. Auth → Login*
 | Validação de dados | Schemas do Mongoose: `required`, `enum`, `min`, `match` e índices compostos |
 | Relacionamento entre entidades | Cinco relacionamentos muitos-para-um, com `populate` e bloqueio de exclusão |
 | Segurança com JWT | Login, middleware de autenticação e autorização por papel |
+| Autorização por perfil | Painel `/admin` restrito a administradores, barrado também no backend |
 | Interface RESTful | 20 rotas cobrindo autenticação e CRUD |
 | Interface GraphQL | Consultas, relatórios e mutations no endpoint `/graphql` |
 | Manipulação de formulários | Cadastro, login e formulários de conta, categoria e transação |
