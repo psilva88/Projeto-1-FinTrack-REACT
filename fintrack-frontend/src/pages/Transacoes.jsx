@@ -20,6 +20,7 @@ import { useToast } from "../contexts/ToastContext";
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
 import Modal from "../components/Modal";
+import ConfirmarExclusao from "../components/ConfirmarExclusao";
 
 
 // Data de hoje no formato aceito pelo input type="date"
@@ -67,6 +68,8 @@ function Transacoes() {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editando, setEditando] = useState(null);
   const [erroForm, setErroForm] = useState("");
+  const [excluindo, setExcluindo] = useState(null);
+  const [apagando, setApagando] = useState(false);
 
   const [descricao, setDescricao] = useState("");
   const [valor, setValor] = useState("");
@@ -171,23 +174,22 @@ function Transacoes() {
   }
 
 
-  async function handleExcluir(transacao) {
-    const confirmar = window.confirm(
-      `Excluir a transação "${transacao.descricao}"?`
-    );
-
-    if (!confirmar) {
-      return;
-    }
+  async function handleExcluir() {
+    setApagando(true);
 
     try {
-      await excluirTransacao({ variables: { id: transacao.id } });
+      await excluirTransacao({ variables: { id: excluindo.id } });
 
       await refetch();
 
       mostrar("Transação excluída com sucesso", "success");
+
+      setExcluindo(null);
     } catch (error) {
+      // O backend recusa a exclusão quando há registros vinculados
       mostrar(mensagemDeErro(error));
+    } finally {
+      setApagando(false);
     }
   }
 
@@ -445,7 +447,7 @@ function Transacoes() {
 
                         <button
                           className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleExcluir(transacao)}
+                          onClick={() => setExcluindo(transacao)}
                         >
                           Excluir
                         </button>
@@ -603,6 +605,21 @@ function Transacoes() {
 
           </form>
         </Modal>
+      )}
+
+
+      {excluindo && (
+        <ConfirmarExclusao
+          titulo="Excluir transação"
+          processando={apagando}
+          onConfirmar={handleExcluir}
+          onCancelar={() => setExcluindo(null)}
+        >
+          <p className="mb-0">
+            Tem certeza que deseja excluir a transação{" "}
+            <strong>{excluindo.descricao}</strong>?
+          </p>
+        </ConfirmarExclusao>
       )}
 
 

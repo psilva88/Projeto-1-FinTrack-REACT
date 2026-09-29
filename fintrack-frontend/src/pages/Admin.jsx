@@ -12,7 +12,7 @@ import { useToast } from "../contexts/ToastContext";
 
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
-import Modal from "../components/Modal";
+import ConfirmarExclusao from "../components/ConfirmarExclusao";
 
 
 function Admin() {
@@ -303,7 +303,12 @@ function Admin() {
 
 
       {excluindo && (
-        <Modal titulo="Excluir usuário" onFechar={fecharExclusao}>
+        <ConfirmarExclusao
+          titulo="Excluir usuário"
+          processando={processando}
+          onConfirmar={handleExcluir}
+          onCancelar={fecharExclusao}
+        >
           <p>
             Tem certeza que deseja excluir <strong>{excluindo.nome}</strong>?
           </p>
@@ -325,26 +330,7 @@ function Admin() {
             <strong>Esta ação é irreversível</strong> e não há como recuperar
             os dados depois.
           </div>
-
-          <div className="d-flex justify-content-end gap-2">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={fecharExclusao}
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="button"
-              className="btn btn-danger"
-              disabled={processando}
-              onClick={handleExcluir}
-            >
-              {processando ? "Excluindo..." : "Excluir"}
-            </button>
-          </div>
-        </Modal>
+        </ConfirmarExclusao>
       )}
 
 

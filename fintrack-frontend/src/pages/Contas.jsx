@@ -13,6 +13,7 @@ import { formatarMoeda } from "../utils/formatar";
 import Loading from "../components/Loading";
 import ErrorMessage from "../components/ErrorMessage";
 import Modal from "../components/Modal";
+import ConfirmarExclusao from "../components/ConfirmarExclusao";
 import { mensagemDeErro } from "../utils/erros";
 import { useToast } from "../contexts/ToastContext";
 
@@ -38,6 +39,8 @@ function Contas() {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [editando, setEditando] = useState(null);
   const [erroForm, setErroForm] = useState("");
+  const [excluindo, setExcluindo] = useState(null);
+  const [apagando, setApagando] = useState(false);
 
   const [nome, setNome] = useState("");
   const [tipo, setTipo] = useState("carteira");
@@ -102,24 +105,22 @@ function Contas() {
   }
 
 
-  async function handleExcluir(conta) {
-    const confirmar = window.confirm(
-      `Excluir a conta "${conta.nome}"?`
-    );
-
-    if (!confirmar) {
-      return;
-    }
+  async function handleExcluir() {
+    setApagando(true);
 
     try {
-      await excluirConta({ variables: { id: conta.id } });
+      await excluirConta({ variables: { id: excluindo.id } });
 
       await refetch();
 
       mostrar("Conta excluída com sucesso", "success");
+
+      setExcluindo(null);
     } catch (error) {
-      // O backend bloqueia a exclusão se houver transações vinculadas
+      // O backend recusa a exclusão quando há registros vinculados
       mostrar(mensagemDeErro(error));
+    } finally {
+      setApagando(false);
     }
   }
 
@@ -200,7 +201,7 @@ function Contas() {
 
                       <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => handleExcluir(item.conta)}
+                        onClick={() => setExcluindo(item.conta)}
                       >
                         Excluir
                       </button>
@@ -293,6 +294,21 @@ function Contas() {
 
           </form>
         </Modal>
+      )}
+
+
+      {excluindo && (
+        <ConfirmarExclusao
+          titulo="Excluir conta"
+          processando={apagando}
+          onConfirmar={handleExcluir}
+          onCancelar={() => setExcluindo(null)}
+        >
+          <p className="mb-0">
+            Tem certeza que deseja excluir a conta{" "}
+            <strong>{excluindo.nome}</strong>?
+          </p>
+        </ConfirmarExclusao>
       )}
 
 
