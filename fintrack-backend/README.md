@@ -124,7 +124,8 @@ Cada documento guarda o `ObjectId` do usuário dono, garantindo que cada pessoa 
 | GET | `/usuarios` | Lista todos os usuários | ✅ (apenas admin) |
 | GET | `/usuarios/:id` | Busca um usuário por ID | ✅ (o próprio ou admin) |
 | PUT | `/usuarios/:id` | Atualiza um usuário | ✅ (o próprio ou admin) |
-| DELETE | `/usuarios/:id` | Remove um usuário | ✅ (apenas admin) |
+| GET | `/usuarios/:id/resumo` | Quantos registros o usuário possui | ✅ (apenas admin) |
+| DELETE | `/usuarios/:id` | Remove o usuário e, em cascata, os dados dele | ✅ (apenas admin) |
 
 ### 🏦 Contas — `/contas`
 | Método | Rota | Descrição | Protegida |
@@ -183,6 +184,7 @@ Enquanto o REST cuida da autenticação e do CRUD de usuários, o **GraphQL conc
 | Query | Descrição |
 |---|---|
 | `eu` | Dados do usuário autenticado |
+| `estatisticasGerais` | Números da plataforma inteira — **somente administradores** |
 | `contas` | Lista as contas do usuário autenticado |
 | `categorias(tipo)` | Lista as categorias, com filtro opcional por `receita` ou `despesa` |
 | `saldoPorConta` | Saldo consolidado de cada conta (saldo inicial + receitas − despesas) |
@@ -207,7 +209,17 @@ Enquanto o REST cuida da autenticação e do CRUD de usuários, o **GraphQL conc
 
 As mutations seguem as mesmas regras das rotas REST: exigem token, gravam sempre no nome do usuário autenticado e validam se a conta e a categoria informadas pertencem a ele. Um registro criado por qualquer uma das duas interfaces é gravado na mesma coleção e aparece nas consultas da outra.
 
-Os erros seguem o padrão do GraphQL: a resposta chega com **status 200** e o problema vem descrito dentro de `errors`, com um código em `extensions` (`UNAUTHENTICATED`, `BAD_USER_INPUT`, `NOT_FOUND` ou `CONFLICT`).
+Os erros seguem o padrão do GraphQL: a resposta chega com **status 200** e o problema vem descrito dentro de `errors`, com um código em `extensions` (`UNAUTHENTICATED`, `FORBIDDEN`, `BAD_USER_INPUT`, `NOT_FOUND` ou `CONFLICT`).
+
+### Autorização por perfil no GraphQL
+
+A consulta `estatisticasGerais` é a única que não filtra pelo usuário logado: ela devolve os números da plataforma inteira. Por isso passa por uma verificação a mais, que confere o papel assinado dentro do token — a mesma regra do middleware `somenteAdmin` das rotas REST. Quem não é administrador recebe o código `FORBIDDEN`.
+
+### Exclusão em cascata
+
+Ao remover um usuário, `DELETE /usuarios/:id` apaga também as transações, as contas e as categorias dele, nessa ordem. Sem isso, esses documentos continuariam no banco referenciando um usuário que não existe mais, e entrariam na contagem das estatísticas. A resposta informa quantos registros saíram junto.
+
+Como a ação não tem volta, o painel consulta antes `GET /usuarios/:id/resumo`, que devolve só as quantidades de contas, categorias e transações daquela pessoa — nenhum valor financeiro. É a única informação individual que o administrador recebe, e ela existe para que quem apaga saiba o tamanho do que está apagando.
 
 ### Exemplo — Dashboard
 
@@ -306,7 +318,7 @@ Projeto-1-FinTrack-REACT/
     │   │
     │   ├── controllers/
     │   │   ├── authController.js      ← Register + Login (JWT)
-    │   │   ├── usuarioController.js   ← CRUD de usuários
+    │   │   ├── usuarioController.js   ← CRUD de usuários + exclusão em cascata
     │   │   ├── contaController.js     ← CRUD de contas
     │   │   ├── categoriaController.js ← CRUD de categorias
     │   │   └── transacaoController.js ← CRUD + paginação e filtros
@@ -323,7 +335,7 @@ Projeto-1-FinTrack-REACT/
     │   │   └── admin.js               ← Autorização por perfil
     │   │
     │   └── graphql/
-    │       ├── typeDefs.js            ← Schema (tipos, 8 queries e 9 mutations)
+    │       ├── typeDefs.js            ← Schema (tipos, 9 queries e 9 mutations)
     │       ├── resolvers.js           ← Agregações, relatórios e CRUD
     │       └── index.js               ← Configuração do Apollo Server
     │
