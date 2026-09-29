@@ -9,6 +9,7 @@ import {
 import Navbar from "./components/Navbar";
 import AvisoOffline from "./components/AvisoOffline";
 import RotaPrivada from "./components/RotaPrivada";
+import RotaAdmin from "./components/RotaAdmin";
 
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
@@ -16,6 +17,7 @@ import Dashboard from "./pages/Dashboard";
 import Contas from "./pages/Contas";
 import Categorias from "./pages/Categorias";
 import Transacoes from "./pages/Transacoes";
+import Admin from "./pages/Admin";
 
 
 // As telas de entrada já mostram a logo e trazem o próprio link
@@ -75,6 +77,15 @@ function Conteudo() {
             <RotaPrivada>
               <Transacoes />
             </RotaPrivada>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <RotaAdmin>
+              <Admin />
+            </RotaAdmin>
           }
         />
 

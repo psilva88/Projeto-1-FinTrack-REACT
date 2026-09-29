@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../contexts/AuthContext";
 
 
 function Login() {
   const navigate = useNavigate();
+  const local = useLocation();
 
   const { entrar, autenticado } = useAuth();
 
@@ -13,6 +14,19 @@ function Login() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
+
+  // Aviso que a tela de cadastro envia junto com o redirecionamento
+  const [sucesso, setSucesso] = useState(local.state?.sucesso || "");
+
+
+  // O React Router guarda esse aviso no histórico do navegador.
+  // Depois de exibi-lo apagamos esse registro, senão ele voltaria
+  // a aparecer toda vez que a página fosse recarregada.
+  useEffect(() => {
+    if (local.state?.sucesso) {
+      navigate(local.pathname, { replace: true, state: null });
+    }
+  }, [local.pathname, local.state, navigate]);
 
 
   // Quem já está logado não precisa ver a tela de login
@@ -25,6 +39,7 @@ function Login() {
     event.preventDefault();
 
     setErro("");
+    setSucesso("");
     setEnviando(true);
 
     try {
@@ -58,6 +73,11 @@ function Login() {
               <h1 className="mb-1">Entrar</h1>
 
               <p className="text-muted mb-4">Acesse sua conta para continuar</p>
+
+
+              {sucesso && (
+                <div className="alert alert-success py-2">{sucesso}</div>
+              )}
 
 
               {erro && (

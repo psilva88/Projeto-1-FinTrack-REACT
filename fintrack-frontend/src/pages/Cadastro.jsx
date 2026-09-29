@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 function Cadastro() {
   const navigate = useNavigate();
 
-  const { registrar, entrar } = useAuth();
+  const { registrar } = useAuth();
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -25,10 +25,13 @@ function Cadastro() {
     try {
       await registrar(nome, email, senha);
 
-      // O cadastro não devolve token, então já fazemos o login
-      await entrar(email, senha);
-
-      navigate("/dashboard");
+      // O cadastro apenas cria o usuário, sem devolver token.
+      // A autenticação é um passo separado, então mandamos a pessoa
+      // para a tela de entrada levando o aviso de que deu certo.
+      navigate("/login", {
+        replace: true,
+        state: { sucesso: "Conta criada com sucesso! Faça login para continuar." },
+      });
     } catch (error) {
       setErro(error.message);
     } finally {

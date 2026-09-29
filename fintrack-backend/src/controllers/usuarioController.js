@@ -1,4 +1,7 @@
 const Usuario = require('../models/Usuario');
+const Conta = require('../models/Conta');
+const Categoria = require('../models/Categoria');
+const Transacao = require('../models/Transacao');
 
 // GET /usuarios (somente admin)
 const listar = async (req, res) => {
@@ -81,23 +84,67 @@ const atualizar = async (req, res) => {
   }
 };
 
+// GET /usuarios/:id/resumo (somente admin)
+// Conta quantos registros o usuário possui. Serve para o painel avisar,
+// antes de confirmar, o tamanho do que a exclusão vai apagar.
+// Devolve apenas quantidades: os valores financeiros seguem privados.
+const resumoDeDados = async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.params.id);
+
+    if (!usuario) {
+      return res.status(404).json({ mensagem: 'Usuário não encontrado' });
+    }
+
+    const [contas, categorias, transacoes] = await Promise.all([
+      Conta.countDocuments({ usuario: usuario._id }),
+      Categoria.countDocuments({ usuario: usuario._id }),
+      Transacao.countDocuments({ usuario: usuario._id })
+    ]);
+
+    res.status(200).json({ contas, categorias, transacoes });
+  } catch (error) {
+    res.status(500).json({ mensagem: 'Erro ao resumir os dados do usuário', erro: error.message });
+  }
+};
+
 // DELETE /usuarios/:id (somente admin)
+// A exclusão é em cascata: os dados financeiros pertencem à pessoa,
+// então saem junto com ela. Sem isso, as contas, categorias e transações
+// ficariam no banco apontando para um usuário que não existe mais.
 const remover = async (req, res) => {
   try {
     if (req.usuario.id === req.params.id) {
       return res.status(400).json({ mensagem: 'Você não pode excluir a própria conta de admin' });
     }
 
-    const usuario = await Usuario.findByIdAndDelete(req.params.id);
+    const usuario = await Usuario.findById(req.params.id);
 
     if (!usuario) {
       return res.status(404).json({ mensagem: 'Usuário não encontrado' });
     }
 
-    res.status(200).json({ mensagem: 'Usuário excluído com sucesso' });
+    // As transações saem primeiro, porque dependem de conta e categoria
+    const transacoes = await Transacao.deleteMany({ usuario: usuario._id });
+
+    const [contas, categorias] = await Promise.all([
+      Conta.deleteMany({ usuario: usuario._id }),
+      Categoria.deleteMany({ usuario: usuario._id })
+    ]);
+
+    await usuario.deleteOne();
+
+    res.status(200).json({
+      mensagem: 'Usuário excluído com sucesso',
+      removidos: {
+        transacoes: transacoes.deletedCount,
+        contas: contas.deletedCount,
+        categorias: categorias.deletedCount
+      }
+    });
   } catch (error) {
     res.status(500).json({ mensagem: 'Erro ao excluir usuário', erro: error.message });
   }
 };
 
-module.exports = { listar, buscarPorId, atualizar, remover };
+module.exports = { listar, buscarPorId, atualizar, remover, resumoDeDados };

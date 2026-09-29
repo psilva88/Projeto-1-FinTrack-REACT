@@ -314,6 +314,24 @@ h2 {
 }
 
 
+/* Selo do papel do usuário, no painel de administração */
+.selo-papel {
+  display: inline-block;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.78rem;
+  color: var(--texto-suave);
+}
+
+
+.selo-papel.selo-admin {
+  border-color: var(--verde);
+  color: var(--verde);
+  font-weight: 600;
+}
+
+
 /* ---------- Formulários e botões ---------- */
 
 .form-label {

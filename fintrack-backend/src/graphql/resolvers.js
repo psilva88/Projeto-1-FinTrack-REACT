@@ -17,6 +17,23 @@ const exigirLogin = (contexto) => {
 };
 
 /**
+ * Mesma regra do middleware somenteAdmin das rotas REST:
+ * além de estar logado, o usuário precisa ter o papel de administrador.
+ * O papel vem assinado dentro do token, não do corpo da requisição.
+ */
+const exigirAdmin = (contexto) => {
+  const usuarioId = exigirLogin(contexto);
+
+  if (contexto.usuario.papel !== 'admin') {
+    throw new GraphQLError('Acesso restrito a administradores', {
+      extensions: { code: 'FORBIDDEN' }
+    });
+  }
+
+  return usuarioId;
+};
+
+/**
  * Confere se a conta e a categoria pertencem ao usuário logado.
  * Mesma regra usada no controller REST de transações.
  */
@@ -239,6 +256,63 @@ const resolvers = {
         saldoPorConta: saldos,
         gastosPorCategoria: gastos,
         ultimasTransacoes: ultimas
+      };
+    },
+
+    estatisticasGerais: async (_, __, contexto) => {
+      exigirAdmin(contexto);
+
+      // Diferente das outras consultas, aqui não filtramos por usuário:
+      // são os números da plataforma inteira.
+      const trintaDiasAtras = new Date();
+      trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
+
+      const [
+        totalUsuarios,
+        totalAdmins,
+        totalContas,
+        totalCategorias,
+        totalTransacoes,
+        novosUsuarios30Dias,
+        volumes,
+        saldosIniciais
+      ] = await Promise.all([
+        Usuario.countDocuments(),
+        Usuario.countDocuments({ papel: 'admin' }),
+        Conta.countDocuments(),
+        Categoria.countDocuments(),
+        Transacao.countDocuments(),
+        Usuario.countDocuments({ createdAt: { $gte: trintaDiasAtras } }),
+        Transacao.aggregate([
+          { $group: { _id: '$tipo', total: { $sum: '$valor' } } }
+        ]),
+        Conta.aggregate([
+          { $group: { _id: null, total: { $sum: '$saldoInicial' } } }
+        ])
+      ]);
+
+      const porTipo = (tipo) => {
+        const achado = volumes.find((item) => item._id === tipo);
+        return achado ? achado.total : 0;
+      };
+
+      const receitas = porTipo('receita');
+      const despesas = porTipo('despesa');
+      const saldoInicialTotal = saldosIniciais[0] ? saldosIniciais[0].total : 0;
+
+      return {
+        totalUsuarios,
+        totalAdmins,
+        totalContas,
+        totalCategorias,
+        totalTransacoes,
+        novosUsuarios30Dias,
+        saldoInicialTotal,
+        // Mesma fórmula do saldo de cada conta no Resumo, só que
+        // somando as contas de todos os usuários
+        saldoPlataforma: saldoInicialTotal + receitas - despesas,
+        volumeReceitas: receitas,
+        volumeDespesas: despesas
       };
     }
   },

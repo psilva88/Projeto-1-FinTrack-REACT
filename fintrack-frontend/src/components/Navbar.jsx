@@ -110,6 +110,15 @@ function Navbar() {
                 </NavLink>
               </li>
 
+              {/* O painel só aparece para quem tem o papel de administrador */}
+              {usuario.papel === "admin" && (
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/admin" onClick={fechar}>
+                    Administração
+                  </NavLink>
+                </li>
+              )}
+
               <li className="nav-item d-lg-none">
                 <button className="nav-link sair-menu" onClick={handleSair}>
                   Sair

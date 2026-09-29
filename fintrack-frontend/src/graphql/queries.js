@@ -135,3 +135,23 @@ export const GET_RESUMO_MENSAL = gql`
     }
   }
 `;
+
+
+// Números da plataforma inteira, usados no painel de administração.
+// O backend recusa esta consulta para quem não é administrador.
+export const GET_ESTATISTICAS = gql`
+  query GetEstatisticas {
+    estatisticasGerais {
+      totalUsuarios
+      totalAdmins
+      totalContas
+      totalCategorias
+      totalTransacoes
+      novosUsuarios30Dias
+      saldoPlataforma
+      saldoInicialTotal
+      volumeReceitas
+      volumeDespesas
+    }
+  }
+`;

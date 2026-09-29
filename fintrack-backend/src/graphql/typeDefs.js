@@ -65,6 +65,20 @@ const typeDefs = `#graphql
     ultimasTransacoes: [Transacao!]!
   }
 
+  "Números gerais da plataforma, visíveis apenas para administradores"
+  type EstatisticasGerais {
+    totalUsuarios: Int!
+    totalAdmins: Int!
+    totalContas: Int!
+    totalCategorias: Int!
+    totalTransacoes: Int!
+    saldoPlataforma: Float!
+    saldoInicialTotal: Float!
+    volumeReceitas: Float!
+    volumeDespesas: Float!
+    novosUsuarios30Dias: Int!
+  }
+
   # ---------- Consultas ----------
 
   type Query {
@@ -98,6 +112,9 @@ const typeDefs = `#graphql
 
     "Tudo que a tela inicial precisa, em uma única requisição"
     dashboard(inicio: String, fim: String): Dashboard!
+
+    "Números gerais da plataforma (somente administradores)"
+    estatisticasGerais: EstatisticasGerais!
   }
 
   # ---------- Operações de escrita ----------
